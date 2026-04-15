@@ -59,7 +59,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           <h2 className="text-xl font-bold text-white">JOIN FC Admin</h2>
           <LanguageToggle />
         </div>
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 overflow-y-auto" style={{ maxHeight: "calc(100vh - 140px)" }}>
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -96,7 +96,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main */}
-      <main className="flex-1 p-6 lg:p-8 overflow-auto">
+      <main className="flex-1 p-4 pt-16 lg:pt-8 lg:p-8 overflow-auto">
         {children}
       </main>
     </div>

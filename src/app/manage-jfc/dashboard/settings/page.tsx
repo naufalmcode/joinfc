@@ -159,7 +159,7 @@ export default function SettingsPage() {
         {/* Hero Background */}
         <div className="bg-gray-800 rounded-xl p-6 space-y-4">
           <h2 className="text-lg font-semibold text-white">Background Header</h2>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${settings.heroType === "gradient" ? "bg-gray-700" : "border-gray-600 bg-gray-700/50"}`}
               style={settings.heroType === "gradient" ? { borderColor: primary } : undefined}>
               <input type="radio" name="heroType" value="gradient" checked={settings.heroType === "gradient"}
@@ -195,7 +195,7 @@ export default function SettingsPage() {
         {/* Theme Colors */}
         <div className="bg-gray-800 rounded-xl p-6 space-y-4">
           <h2 className="text-lg font-semibold text-white">Warna Tema</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-gray-300 text-sm mb-1">Primary</label>
               <div className="flex items-center gap-2">

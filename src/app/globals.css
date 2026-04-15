@@ -5,6 +5,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   background: #111827;
   color: #f3f4f6;

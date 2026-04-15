@@ -109,7 +109,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
           <p className="text-green-400 text-sm mb-4">✓ {t("voteSuccess")}</p>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
           {vote.options.map((opt) => {
             const percent = totalVotes > 0 ? Math.round((opt._count.responses / totalVotes) * 100) : 0;
             const isSelected = votedOptionId === opt.id;
@@ -129,9 +129,9 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
                     <img src={opt.imageUrl} alt={opt.name} className="w-full h-40 object-cover rounded-lg" />
                     <div
                       onClick={(e) => { e.stopPropagation(); setPreviewImage({ url: opt.imageUrl!, name: opt.name }); }}
-                      className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center rounded-lg cursor-pointer"
+                      className="absolute inset-0 bg-black/0 hover:bg-black/30 active:bg-black/30 transition flex items-center justify-center rounded-lg cursor-pointer"
                     >
-                      <span className="text-white text-2xl opacity-0 group-hover:opacity-100 transition">🔍</span>
+                      <span className="text-white text-2xl opacity-70 sm:opacity-0 group-hover:opacity-100 transition">🔍</span>
                     </div>
                   </div>
                 )}

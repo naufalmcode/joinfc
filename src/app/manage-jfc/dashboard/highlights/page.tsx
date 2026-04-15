@@ -34,9 +34,15 @@ export default function HighlightsPage() {
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
-    if (data.success) setForm((f) => ({ ...f, imageUrl: data.data.url }));
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.success) setForm((f) => ({ ...f, imageUrl: data.data.url }));
+      else alert(data.error || "Upload gagal");
+    } catch (err) {
+      alert("Upload gagal. Cek koneksi atau konfigurasi.");
+    }
+    e.target.value = "";
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -132,7 +138,7 @@ export default function HighlightsPage() {
             <div className="p-3">
               <p className="text-white text-sm font-medium truncate">{h.title}</p>
             </div>
-            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+            <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
               <button onClick={() => handleEdit(h)} className="p-1.5 bg-blue-600 text-white rounded text-xs">Edit</button>
               <button onClick={() => setDeleteId(h.id)} className="p-1.5 bg-red-600 text-white rounded text-xs">Hapus</button>
             </div>

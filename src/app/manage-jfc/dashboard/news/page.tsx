@@ -121,8 +121,8 @@ export default function NewsPage() {
 
       <div className="space-y-4">
         {newsList.map((n) => (
-          <div key={n.id} className="bg-gray-800 rounded-xl p-4 flex items-start gap-4">
-            {n.imageUrl && <img src={n.imageUrl} alt="" className="w-24 h-16 object-cover rounded flex-shrink-0" />}
+          <div key={n.id} className="bg-gray-800 rounded-xl p-4 flex flex-col sm:flex-row items-start gap-4">
+            {n.imageUrl && <img src={n.imageUrl} alt="" className="w-full sm:w-24 h-40 sm:h-16 object-cover rounded flex-shrink-0" />}
             <div className="flex-1 min-w-0">
               <h3 className="text-white font-semibold">{n.title}</h3>
               <p className="text-gray-400 text-sm mt-1 line-clamp-2">{n.content}</p>

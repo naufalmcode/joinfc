@@ -139,7 +139,7 @@ export default function JerseysPage() {
       <div className="space-y-4">
         {jerseys.map((j) => (
           <div key={j.id} className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
               <div className="flex gap-4">
                 {(j.designUrls || []).length > 0 && (
                   <div className="flex gap-1 flex-shrink-0">
@@ -170,7 +170,7 @@ export default function JerseysPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
+              <div className="flex gap-2 flex-shrink-0 flex-wrap">
                 <button onClick={() => setViewJersey(viewJersey?.id === j.id ? null : j)}
                   className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewJersey?.id === j.id ? "Tutup" : "Lihat"}</button>
                 <button onClick={() => toggleStatus(j)}
@@ -190,7 +190,8 @@ export default function JerseysPage() {
                 {j.registrations.length === 0 ? (
                   <p className="text-gray-500 text-sm">Belum ada yang daftar.</p>
                 ) : (
-                  <table className="w-full text-sm">
+                  <div className="overflow-x-auto -mx-6 px-6">
+                  <table className="w-full text-sm min-w-[500px]">
                     <thead><tr className="text-gray-400 text-left">
                       <th className="py-1">#</th><th>Pendaftar</th><th>Nama Jersey</th><th>Telepon</th><th>Nomor</th><th>Ukuran</th>
                     </tr></thead>
@@ -207,6 +208,7 @@ export default function JerseysPage() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 )}
               </div>
             )}

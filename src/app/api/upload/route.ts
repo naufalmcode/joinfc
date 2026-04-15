@@ -27,10 +27,15 @@ export async function POST(request: NextRequest) {
   const sanitizedExt = ext.replace(/[^a-zA-Z0-9]/g, "").slice(0, 5);
   const filename = `${uuidv4()}.${sanitizedExt}`;
 
-  const blob = await put(filename, file, {
-    access: "public",
-    addRandomSuffix: false,
-  });
+  try {
+    const blob = await put(filename, file, {
+      access: "public",
+      addRandomSuffix: false,
+    });
 
-  return successResponse({ url: blob.url }, 201);
+    return successResponse({ url: blob.url }, 201);
+  } catch (err) {
+    console.error("Upload error:", err);
+    return errorResponse("Upload failed. Make sure BLOB_READ_WRITE_TOKEN is configured.", 500);
+  }
 }

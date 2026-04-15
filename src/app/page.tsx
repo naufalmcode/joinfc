@@ -89,6 +89,7 @@ export default function HomePage() {
   const [votes, setVotes] = useState<VoteItemPublic[]>([]);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [selectedHighlight, setSelectedHighlight] = useState<Highlight | null>(null);
+  const [tappedDay, setTappedDay] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -220,14 +221,16 @@ export default function HomePage() {
                       const isToday = new Date().getDate() === day && new Date().getMonth() === month && new Date().getFullYear() === year;
                       return (
                         <div key={day} className="relative group">
-                          <div className={`aspect-square flex items-center justify-center rounded text-xs transition
+                          <div
+                            onClick={() => dayEvts && setTappedDay(tappedDay === day ? null : day)}
+                            className={`aspect-square flex items-center justify-center rounded text-xs transition
                             ${dayEvts ? "font-bold cursor-pointer" : "text-gray-400"}
                             ${isToday ? "ring-1 ring-white/30" : ""}
                           `} style={dayEvts ? { backgroundColor: primary, color: "#fff" } : undefined}>
                             {day}
                           </div>
                           {dayEvts && (
-                            <div className="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-1 w-40 bg-gray-900 border border-gray-700 rounded-lg p-2 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition">
+                            <div className={`absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-1 w-40 bg-gray-900 border border-gray-700 rounded-lg p-2 shadow-xl pointer-events-none transition ${tappedDay === day ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
                               {dayEvts.map((ev) => (
                                 <div key={ev.id} className="text-[10px] text-white py-0.5">
                                   <span className="font-semibold">{format(new Date(ev.eventDate), "HH:mm")}</span>{" "}

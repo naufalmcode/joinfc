@@ -245,7 +245,7 @@ export default function VotesPage() {
           const totalVotes = vote.options.reduce((sum, o) => sum + o._count.responses, 0);
           return (
             <div key={vote.id} className="bg-gray-800 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
                 <div>
                   <h3 className="text-lg font-semibold text-white">{vote.title}</h3>
                   <span className={`text-xs px-2 py-1 rounded ${vote.status === "open" ? "bg-green-600" : "bg-red-600"} text-white`}>
@@ -253,7 +253,7 @@ export default function VotesPage() {
                   </span>
                   <span className="text-xs text-gray-400 ml-2">{t("totalVotes")}: {totalVotes}</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={() => toggleStatus(vote)}
                     className="px-3 py-1 text-sm rounded bg-gray-600 text-white hover:bg-gray-500 transition"

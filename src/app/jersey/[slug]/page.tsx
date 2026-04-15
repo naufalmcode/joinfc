@@ -32,6 +32,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
   const [error, setError] = useState("");
   const [takenMap, setTakenMap] = useState<Record<number, string>>({});
   const [notFound, setNotFound] = useState(false);
+  const [tappedNum, setTappedNum] = useState<number | null>(null);
 
   async function loadJersey() {
     const res = await fetch(`/api/jerseys/slug/${slug}`);
@@ -122,7 +123,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
         {/* Number Grid */}
         <div className="bg-gray-800 rounded-xl p-6 md:p-8 mt-6">
           <h2 className="text-xl font-bold mb-4">{t("chooseNumber")}</h2>
-          <div className="grid grid-cols-10 gap-1.5 md:gap-2">
+          <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-1.5 md:gap-2">
             {Array.from({ length: 99 }, (_, i) => i + 1).map((num) => {
               const taken = takenNumbers.includes(num);
               const selected = form.number === num;
@@ -132,9 +133,12 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   <button
                     type="button"
                     disabled={taken || jersey.status !== "open"}
-                    onClick={() => setForm((f) => ({ ...f, number: num }))}
-                    className={`w-full aspect-square rounded text-sm font-mono font-bold transition
-                      ${taken ? "bg-red-900/50 text-red-500 cursor-not-allowed" : ""}
+                    onClick={() => {
+                      if (taken) { setTappedNum(tappedNum === num ? null : num); return; }
+                      setForm((f) => ({ ...f, number: num }));
+                    }}
+                    className={`w-full aspect-square rounded text-xs sm:text-sm font-mono font-bold transition
+                      ${taken ? "bg-red-900/50 text-red-500 cursor-pointer" : ""}
                       ${selected ? "bg-green-600 text-white ring-2 ring-green-400" : ""}
                       ${!taken && !selected ? "bg-gray-700 text-gray-300 hover:bg-green-700 hover:text-white" : ""}
                     `}
@@ -142,7 +146,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                     {num}
                   </button>
                   {owner && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-[10px] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-10">
+                    <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-[10px] rounded whitespace-nowrap pointer-events-none z-10 transition ${tappedNum === num ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
                       {owner}
                     </div>
                   )}

@@ -165,7 +165,7 @@ export default function EventsPage() {
           <input value={form.locationUrl} onChange={(e) => setForm((f) => ({ ...f, locationUrl: e.target.value }))}
             placeholder="https://maps.google.com/..." className={ic} />
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-gray-300 text-sm mb-1">Nomor Rekening</label>
             <input value={form.bankAccount} onChange={(e) => setForm((f) => ({ ...f, bankAccount: e.target.value }))}
@@ -201,7 +201,7 @@ export default function EventsPage() {
 
           return (
             <div key={ev.id} className="bg-gray-800 rounded-xl p-6">
-              <div className="flex items-start justify-between">
+              <div className="flex items-start flex-col sm:flex-row sm:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3">
                     <h3 className="text-white font-bold text-lg">{ev.title}</h3>
@@ -227,7 +227,7 @@ export default function EventsPage() {
                     {waiting > 0 && <span className="text-yellow-400 ml-2">+ {waiting} waiting list</span>}
                   </p>
                 </div>
-                <div className="flex gap-2 flex-shrink-0">
+                <div className="flex gap-2 flex-shrink-0 flex-wrap">
                   <button onClick={() => setViewEvent(viewEvent?.id === ev.id ? null : ev)}
                     className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewEvent?.id === ev.id ? "Tutup" : "Lihat"}</button>
                   <button onClick={() => toggleStatus(ev)}
@@ -246,7 +246,8 @@ export default function EventsPage() {
                   {ev.registrations.length === 0 ? (
                     <p className="text-gray-500 text-sm">Belum ada yang daftar.</p>
                   ) : (
-                    <table className="w-full text-sm">
+                    <div className="overflow-x-auto -mx-6 px-6">
+                    <table className="w-full text-sm min-w-[600px]">
                       <thead>
                         <tr className="text-gray-400 text-left">
                           <th className="py-1">#</th>
@@ -299,6 +300,7 @@ export default function EventsPage() {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   )}
                 </div>
               )}
