@@ -36,6 +36,8 @@ model Highlight {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([sortOrder])
+  @@index([isActive, createdAt])
   @@map("highlights")
 }
 
@@ -48,6 +50,7 @@ model CalendarSchedule {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([eventDate])
   @@map("calendar_schedules")
 }
 
@@ -66,6 +69,8 @@ model Event {
   updatedAt      DateTime            @updatedAt
   registrations  EventRegistration[]
 
+  @@index([eventDate])
+  @@index([status, eventDate])
   @@map("events")
 }
 
@@ -79,6 +84,8 @@ model EventRegistration {
   createdAt DateTime @default(now())
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
+  @@index([eventId, createdAt])
+  @@index([eventId, position, status])
   @@map("event_registrations")
 }
 
@@ -96,6 +103,8 @@ model JerseyLaunch {
   updatedAt       DateTime             @updatedAt
   registrations   JerseyRegistration[]
 
+  @@index([createdAt])
+  @@index([status, createdAt])
   @@map("jersey_launches")
 }
 
@@ -127,6 +136,7 @@ model News {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([isActive, createdAt])
   @@map("news")
 }
 
@@ -136,6 +146,7 @@ model AdminSession {
   expiresAt DateTime
   createdAt DateTime @default(now())
 
+  @@index([expiresAt])
   @@map("admin_sessions")
 }
 
@@ -148,6 +159,7 @@ model Vote {
   options   VoteOption[]
   responses VoteResponse[]
 
+  @@index([status, createdAt])
   @@map("votes")
 }
 
@@ -160,6 +172,7 @@ model VoteOption {
   vote      Vote           @relation(fields: [voteId], references: [id], onDelete: Cascade)
   responses VoteResponse[]
 
+  @@index([voteId, sortOrder])
   @@map("vote_options")
 }
 
@@ -171,5 +184,7 @@ model VoteResponse {
   vote      Vote       @relation(fields: [voteId], references: [id], onDelete: Cascade)
   option    VoteOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
+  @@index([voteId])
+  @@index([optionId])
   @@map("vote_responses")
 }
