@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
 import ConfirmModal from "@/components/ConfirmModal";
+import UploadProgressBar from "@/components/UploadProgressBar";
+import { uploadFile, type UploadProgress } from "@/lib/upload";
 import Link from "next/link";
 
 export default function SettingsPage() {
@@ -23,11 +25,25 @@ export default function SettingsPage() {
   const [msg, setMsg] = useState("");
   const [pendingLogo, setPendingLogo] = useState<File | null>(null);
   const [pendingHero, setPendingHero] = useState<File | null>(null);
-  const logoPreview = useMemo(() => pendingLogo ? URL.createObjectURL(pendingLogo) : null, [pendingLogo]);
-  const heroPreview = useMemo(() => pendingHero ? URL.createObjectURL(pendingHero) : null, [pendingHero]);
-  useEffect(() => { return () => { if (logoPreview) URL.revokeObjectURL(logoPreview); }; }, [logoPreview]);
-  useEffect(() => { return () => { if (heroPreview) URL.revokeObjectURL(heroPreview); }; }, [heroPreview]);
+  const logoBlobRef = useRef<string | null>(null);
+  const heroBlobRef = useRef<string | null>(null);
+
+  function getLogoPreview() {
+    if (!pendingLogo) { if (logoBlobRef.current) { URL.revokeObjectURL(logoBlobRef.current); logoBlobRef.current = null; } return null; }
+    if (!logoBlobRef.current) logoBlobRef.current = URL.createObjectURL(pendingLogo);
+    return logoBlobRef.current;
+  }
+  function getHeroPreview() {
+    if (!pendingHero) { if (heroBlobRef.current) { URL.revokeObjectURL(heroBlobRef.current); heroBlobRef.current = null; } return null; }
+    if (!heroBlobRef.current) heroBlobRef.current = URL.createObjectURL(pendingHero);
+    return heroBlobRef.current;
+  }
+  const logoPreview = getLogoPreview();
+  const heroPreview = getHeroPreview();
+
+  useEffect(() => { return () => { if (logoBlobRef.current) URL.revokeObjectURL(logoBlobRef.current); if (heroBlobRef.current) URL.revokeObjectURL(heroBlobRef.current); }; }, []);
   const [modal, setModal] = useState<{ open: boolean; message: string }>({ open: false, message: "" });
+  const [uploadProgress, setUploadProgress] = useState<(UploadProgress & { current?: number; totalFiles?: number }) | null>(null);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -55,28 +71,26 @@ export default function SettingsPage() {
 
     const updated = { ...settings };
 
-    // Upload pending files
-    for (const [file, field] of [[pendingLogo, "logoUrl"], [pendingHero, "heroImageUrl"]] as const) {
+    // Upload pending files with progress
+    const filesToUpload = [[pendingLogo, "logoUrl"], [pendingHero, "heroImageUrl"]] as const;
+    const activeUploads = filesToUpload.filter(([file]) => file);
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const [file, field] = filesToUpload[i];
       if (file) {
-        const fd = new FormData();
-        fd.append("file", file);
         try {
-          const res = await fetch("/api/upload", { method: "POST", body: fd });
-          const data = await res.json();
-          if (data.success) {
-            (updated as Record<string, string>)[field] = data.data.url;
-          } else {
-            setMsg("Upload gagal: " + (data.error || "Unknown error"));
-            setSaving(false);
-            return;
-          }
-        } catch {
-          setMsg("Gagal upload gambar. Pastikan server berjalan.");
+          const url = await uploadFile(file, (p) => {
+            setUploadProgress({ ...p, current: i + 1, totalFiles: activeUploads.length });
+          });
+          (updated as Record<string, string>)[field] = url;
+        } catch (err) {
+          setMsg("Upload gagal: " + (err instanceof Error ? err.message : "Unknown error"));
           setSaving(false);
+          setUploadProgress(null);
           return;
         }
       }
     }
+    setUploadProgress(null);
 
     const res = await fetch("/api/settings", {
       method: "PUT",
@@ -101,8 +115,13 @@ export default function SettingsPage() {
   ) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (field === "logoUrl") setPendingLogo(file);
-    else setPendingHero(file);
+    if (field === "logoUrl") {
+      if (logoBlobRef.current) { URL.revokeObjectURL(logoBlobRef.current); logoBlobRef.current = null; }
+      setPendingLogo(file);
+    } else {
+      if (heroBlobRef.current) { URL.revokeObjectURL(heroBlobRef.current); heroBlobRef.current = null; }
+      setPendingHero(file);
+    }
     e.target.value = "";
   }
 
@@ -255,6 +274,12 @@ export default function SettingsPage() {
 
         {msg && (
           <p className={`text-sm ${msg.startsWith("Gagal") ? "text-red-400" : "text-green-400"}`}>{msg}</p>
+        )}
+
+        {uploadProgress && (
+          <div className="max-w-md">
+            <UploadProgressBar progress={uploadProgress} />
+          </div>
         )}
 
         <button type="submit" disabled={saving}

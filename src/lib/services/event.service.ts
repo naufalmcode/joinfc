@@ -54,22 +54,26 @@ export class EventService implements IEventService {
   async register(
     eventId: string,
     data: { name: string; phone: string; position: string }
-  ): Promise<{ registration: EventRegistration; status: "registered" }> {
+  ): Promise<{ registration: EventRegistration; status: "registered" | "waiting" }> {
     const event = await this.eventRepo.findById(eventId);
     if (!event) throw new Error("Event not found");
     if (event.status !== "open") throw new Error("Event is closed");
 
     const position = data.position === "goalkeeper" ? "goalkeeper" : "player";
 
+    const currentCount = await this.registrationRepo.countByEventIdAndPosition(eventId, position);
+    const maxSlots = position === "goalkeeper" ? event.maxGoalkeepers : event.maxPlayers;
+    const status = currentCount >= maxSlots ? "waiting" : "registered";
+
     const registration = await this.registrationRepo.create({
       eventId,
       name: data.name,
       phone: data.phone,
       position,
-      status: "registered",
+      status,
     });
 
-    return { registration, status: "registered" };
+    return { registration, status };
   }
 
   async updateRegistration(id: string, data: { status?: string; position?: string }): Promise<EventRegistration> {

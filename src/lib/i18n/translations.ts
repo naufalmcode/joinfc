@@ -136,6 +136,23 @@ export const translations = {
     newsTitle: "Judul Berita",
     newsContent: "Isi Berita",
 
+    // Jersey pricing
+    itemTypeLabel: "Pilihan Item",
+    itemTypeSet: "1 Stel (Baju + Celana)",
+    itemTypeShirt: "Baju Saja",
+    itemTypeShorts: "Celana Saja",
+    priceLabel: "Harga",
+    totalPriceLabel: "Total Harga",
+    sizeSurcharge: "Tambahan ukuran",
+    free: "Gratis",
+    basePrice: "Harga Dasar (1 Stel)",
+    shirtOnlyPrice: "Harga Baju Saja",
+    shortsOnlyPrice: "Harga Celana Saja",
+    sizeSurcharges: "Tambahan Harga per Ukuran",
+    notAvailable: "Tidak tersedia",
+    prevImage: "Sebelumnya",
+    nextImage: "Selanjutnya",
+
     // Admin Jerseys
     launchNewJersey: "Launch Jersey Baru",
     jerseyName: "Nama Jersey (contoh: Jersey Home 2024)",
@@ -306,6 +323,23 @@ export const translations = {
     editNews: "Edit News",
     newsTitle: "News Title",
     newsContent: "News Content",
+
+    // Jersey pricing
+    itemTypeLabel: "Item Type",
+    itemTypeSet: "Full Set (Shirt + Shorts)",
+    itemTypeShirt: "Shirt Only",
+    itemTypeShorts: "Shorts Only",
+    priceLabel: "Price",
+    totalPriceLabel: "Total Price",
+    sizeSurcharge: "Size surcharge",
+    free: "Free",
+    basePrice: "Base Price (Full Set)",
+    shirtOnlyPrice: "Shirt Only Price",
+    shortsOnlyPrice: "Shorts Only Price",
+    sizeSurcharges: "Size Surcharges",
+    notAvailable: "Not available",
+    prevImage: "Previous",
+    nextImage: "Next",
 
     launchNewJersey: "Launch New Jersey",
     jerseyName: "Jersey Name (e.g. Home Jersey 2024)",

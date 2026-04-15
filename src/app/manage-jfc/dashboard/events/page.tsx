@@ -268,7 +268,6 @@ export default function EventsPage() {
                           <th className="py-1">Nama</th>
                           <th className="py-1">Telepon</th>
                           <th className="py-1">Posisi</th>
-                          <th className="py-1">Status</th>
                           <th className="py-1">Aksi</th>
                         </tr>
                       </thead>
@@ -284,24 +283,17 @@ export default function EventsPage() {
                               </span>
                             </td>
                             <td className="py-1.5">
-                              <span className={`px-2 py-0.5 rounded text-xs ${
-                                r.status === "confirmed" ? "bg-green-800 text-green-300" :
-                                r.status === "registered" ? "bg-blue-800 text-blue-300" :
-                                "bg-yellow-800 text-yellow-300"
-                              }`}>
-                                {r.status === "confirmed" ? "✓ Confirmed" : r.status === "registered" ? "📋 Registered" : "⏳ Waiting"}
-                              </span>
-                            </td>
-                            <td className="py-1.5">
-                              <div className="flex gap-1 flex-wrap">
-                                {r.status !== "confirmed" && (
-                                  <button onClick={() => updateRegStatus(r.id, "confirmed")}
-                                    className="px-2 py-0.5 bg-green-700 hover:bg-green-600 text-white rounded text-xs transition">Confirm</button>
-                                )}
-                                {r.status === "confirmed" && (
-                                  <button onClick={() => updateRegStatus(r.id, "registered")}
-                                    className="px-2 py-0.5 bg-blue-700 hover:bg-blue-600 text-white rounded text-xs transition">Unconfirm</button>
-                                )}
+                              <div className="flex gap-1 flex-wrap items-center">
+                                <select value={r.status} onChange={(e) => updateRegStatus(r.id, e.target.value)}
+                                  className={`px-2 py-0.5 rounded text-xs font-medium border-0 cursor-pointer ${
+                                    r.status === "confirmed" ? "bg-green-700 text-white" :
+                                    r.status === "registered" ? "bg-blue-700 text-white" :
+                                    "bg-yellow-700 text-white"
+                                  }`}>
+                                  <option value="waiting">⏳ Waiting</option>
+                                  <option value="registered">📋 Registered</option>
+                                  <option value="confirmed">✓ Confirmed</option>
+                                </select>
                                 <button onClick={() => updateRegPosition(r.id, r.position === "player" ? "goalkeeper" : "player")}
                                   className="px-2 py-0.5 bg-purple-700 hover:bg-purple-600 text-white rounded text-xs transition">
                                   → {r.position === "player" ? "Kiper" : "Pemain"}

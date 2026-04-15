@@ -5,7 +5,21 @@ import { v4 as uuidv4 } from "uuid";
 import { put } from "@vercel/blob";
 
 export async function POST(request: NextRequest) {
-  const isAdmin = await validateAdminSession();
+  // Try standard session validation first
+  let isAdmin = await validateAdminSession();
+  
+  // Fallback: check cookie from request directly (workaround for multipart requests)
+  if (!isAdmin) {
+    const token = request.cookies.get("jfc_admin_token")?.value;
+    if (token) {
+      const { prisma } = await import("@/lib/db/prisma");
+      const session = await prisma.adminSession.findUnique({ where: { token } });
+      if (session && session.expiresAt > new Date()) {
+        isAdmin = true;
+      }
+    }
+  }
+  
   if (!isAdmin) return errorResponse("Unauthorized", 401);
 
   const formData = await request.formData();
@@ -18,9 +32,9 @@ export async function POST(request: NextRequest) {
     return errorResponse("Only image files are allowed");
   }
 
-  const maxSize = 5 * 1024 * 1024; // 5MB
+  const maxSize = 20 * 1024 * 1024; // 20MB (upscaled UHD images can be large)
   if (file.size > maxSize) {
-    return errorResponse("File size must be less than 5MB");
+    return errorResponse("File size must be less than 20MB");
   }
 
   const ext = file.name.split(".").pop() || "jpg";

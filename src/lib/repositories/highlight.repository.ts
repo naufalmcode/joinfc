@@ -10,7 +10,7 @@ export class HighlightRepository implements IHighlightRepository {
   async findActive(): Promise<Highlight[]> {
     return prisma.highlight.findMany({
       where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
+      orderBy: { createdAt: "desc" },
     });
   }
 

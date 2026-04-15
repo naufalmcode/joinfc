@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
 import ConfirmModal from "@/components/ConfirmModal";
+import UploadProgressBar from "@/components/UploadProgressBar";
+import { uploadFile, uploadFiles as uploadFilesUtil, type UploadProgress } from "@/lib/upload";
 
 interface Highlight {
   id: string;
@@ -67,12 +69,21 @@ export default function HighlightsPage() {
   const { primary } = useAdminTheme();
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [form, setForm] = useState({ title: "", description: "", imageUrl: "" });
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const pendingPreview = useMemo(() => pendingFile ? URL.createObjectURL(pendingFile) : null, [pendingFile]);
-  useEffect(() => { return () => { if (pendingPreview) URL.revokeObjectURL(pendingPreview); }; }, [pendingPreview]);
+  const [pendingImages, setPendingImages] = useState<{ file: File; previewUrl: string }[]>([]);
+  const pendingImagesRef = useRef<{ file: File; previewUrl: string }[]>([]);
+  useEffect(() => {
+    pendingImagesRef.current = pendingImages;
+  }, [pendingImages]);
+
+  useEffect(() => {
+    return () => {
+      pendingImagesRef.current.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+    };
+  }, []);
   const [editing, setEditing] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<(UploadProgress & { current?: number; totalFiles?: number }) | null>(null);
 
   async function loadData() {
     const res = await fetch("/api/highlights");
@@ -83,45 +94,79 @@ export default function HighlightsPage() {
   useEffect(() => { loadData(); }, []);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) setPendingFile(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      const newItems = files.map((file) => ({ file, previewUrl: URL.createObjectURL(file) }));
+      setPendingImages((prev) => [...prev, ...newItems]);
+    }
     e.target.value = "";
+  }
+
+  function removePendingFile(index: number) {
+    setPendingImages((prev) => {
+      const target = prev[index];
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
-    let imageUrl = form.imageUrl;
-    if (pendingFile) {
-      const fd = new FormData();
-      fd.append("file", pendingFile);
-      try {
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        const data = await res.json();
-        if (data.success) imageUrl = data.data.url;
-        else { alert(data.error || "Upload gagal"); setLoading(false); return; }
-      } catch { alert("Upload gagal. Cek koneksi atau konfigurasi."); setLoading(false); return; }
-    }
-
-    const payload = { ...form, imageUrl };
-
     if (editing) {
+      // Editing: use first pending file or keep existing
+      let imageUrl = form.imageUrl;
+      if (pendingImages.length > 0) {
+        try {
+          imageUrl = await uploadFile(pendingImages[0].file, (p) => setUploadProgress(p));
+        } catch (err) {
+          alert(err instanceof Error ? err.message : "Upload gagal");
+          setLoading(false);
+          setUploadProgress(null);
+          return;
+        }
+      }
+      setUploadProgress(null);
       await fetch(`/api/highlights/${editing}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...form, imageUrl }),
       });
     } else {
-      await fetch("/api/highlights", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      // Adding new: create one highlight per file
+      if (pendingImages.length > 0) {
+        let uploadedUrls: string[] = [];
+        try {
+          uploadedUrls = await uploadFilesUtil(pendingImages.map((img) => img.file), (p) => setUploadProgress(p));
+        } catch (err) {
+          alert(err instanceof Error ? err.message : "Upload gagal");
+          setLoading(false);
+          setUploadProgress(null);
+          return;
+        }
+        setUploadProgress(null);
+        for (const url of uploadedUrls) {
+          await fetch("/api/highlights", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...form, imageUrl: url }),
+          });
+        }
+      } else {
+        await fetch("/api/highlights", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, imageUrl: form.imageUrl }),
+        });
+      }
     }
 
     setForm({ title: "", description: "", imageUrl: "" });
-    setPendingFile(null);
+    setPendingImages((prev) => {
+      prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      return [];
+    });
     setEditing(null);
     setLoading(false);
     loadData();
@@ -140,7 +185,10 @@ export default function HighlightsPage() {
       description: h.description || "",
       imageUrl: h.imageUrl || "",
     });
-    setPendingFile(null);
+    setPendingImages((prev) => {
+      prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      return [];
+    });
   }
 
   return (
@@ -166,36 +214,64 @@ export default function HighlightsPage() {
           />
         </div>
         <div>
+          <label className="block text-gray-300 text-sm mb-1">Foto (bisa pilih banyak)</label>
           <p className="text-gray-500 text-xs mb-2">Rekomendasi: 800 × 600 px (rasio 4:3)</p>
           <div className="flex items-center gap-2">
             <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               Pilih Foto
-              <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+              <input type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
             </label>
-            {(form.imageUrl || pendingFile) && (
-              <button type="button" onClick={() => { setForm((f) => ({ ...f, imageUrl: "" })); setPendingFile(null); }}
-                className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition">
-                ✕ Hapus Foto
-              </button>
-            )}
           </div>
-          {pendingFile && pendingPreview && (
-            <div className="mt-2">
-              <img src={pendingPreview} alt="" className="w-32 h-24 object-cover rounded border-2 border-dashed border-yellow-500" />
+          {(form.imageUrl || pendingImages.length > 0) && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {!editing && form.imageUrl && (
+                <div className="relative group">
+                  <img src={form.imageUrl} alt="" className="w-32 h-24 object-cover rounded" />
+                  <button type="button" onClick={() => setForm((f) => ({ ...f, imageUrl: "" }))}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-80 group-hover:opacity-100 transition">✕</button>
+                </div>
+              )}
+              {editing && !pendingImages.length && form.imageUrl && (
+                <div className="relative group">
+                  <img src={form.imageUrl} alt="" className="w-32 h-24 object-cover rounded" />
+                  <button type="button" onClick={() => setForm((f) => ({ ...f, imageUrl: "" }))}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-80 group-hover:opacity-100 transition">✕</button>
+                </div>
+              )}
+              {pendingImages.map((img, idx) => (
+                <div key={`pending-${idx}`} className="relative group">
+                  <img src={img.previewUrl} alt="" className="w-32 h-24 object-cover rounded border-2 border-dashed border-yellow-500" />
+                  <button type="button" onClick={() => removePendingFile(idx)}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-80 group-hover:opacity-100 transition">✕</button>
+                </div>
+              ))}
             </div>
           )}
-          {!pendingFile && form.imageUrl && <img src={form.imageUrl} alt="" className="mt-2 w-32 h-24 object-cover rounded" />}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-3">
+          {uploadProgress && (
+            <div className="max-w-md">
+              <UploadProgressBar progress={uploadProgress} />
+            </div>
+          )}
+          <div className="flex gap-2">
           <button type="submit" disabled={loading}
             className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
             {loading ? "Uploading & Saving..." : editing ? "Update" : "Tambah"}
           </button>
           {editing && (
-            <button type="button" onClick={() => { setEditing(null); setForm({ title: "", description: "", imageUrl: "" }); setPendingFile(null); }}
+            <button type="button" onClick={() => {
+              setEditing(null);
+              setForm({ title: "", description: "", imageUrl: "" });
+              setPendingImages((prev) => {
+                prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+                return [];
+              });
+            }}
               className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition">Batal</button>
           )}
+          </div>
         </div>
       </form>
 

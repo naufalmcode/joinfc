@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# JOIN Football Community (JOIN FC)
 
-## Getting Started
+Aplikasi web komunitas sepak bola untuk mengelola event, jersey, galeri, berita, dan voting.
 
-First, run the development server:
+## Tech Stack
+
+- **Next.js 16.2.3** (App Router + Turbopack)
+- **React 19** + **TypeScript 5**
+- **Tailwind CSS 4**
+- **Prisma 6.19.3** + **Neon PostgreSQL**
+- **Vercel Blob** (image storage)
+- **xlsx** (Excel export)
+
+## Fitur Utama
+
+- Event management dengan registrasi (pemain + kiper, auto waiting list berdasarkan kuota)
+- Jersey launch dengan grid nomor 1-99, multi-image desain, dan harga per ukuran/tipe (basePrice + surcharge)
+- Galeri aktivitas dengan rich text dan carousel (terbaru dulu)
+- Berita multi-foto
+- Voting/polling dengan gambar opsi
+- Admin panel lengkap (7 menu) dengan status dropdown untuk registrasi event
+- Internasionalisasi (Indonesia + English)
+- Tema warna kustomisasi (Primary, Secondary, Accent)
+- Deferred upload (preview sebelum upload) + UHD upscaling otomatis
+- Format Rupiah otomatis pada input harga
+- Export Excel untuk laporan event dan jersey
+- Responsive design (mobile + desktop)
+
+## Quick Start
 
 ```bash
+# Install dependencies
+npm install
+
+# Generate Prisma client
+npx prisma generate
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Admin: http://localhost:3000/manage-jfc
+- Password default: `admjoinfc2020`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+Buat file `.env`:
 
-To learn more about Next.js, take a look at the following resources:
+```
+DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxx
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Build & Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# Production build (auto prisma generate + next build)
+npm run build
 
-## Deploy on Vercel
+# Start production server
+npx next start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Deploy ke **Vercel**: set `DATABASE_URL` dan `BLOB_READ_WRITE_TOKEN` di environment variables.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Dokumentasi Lengkap
+
+- [Panduan Pengguna](docs/USER_GUIDE.md)
+- [Dokumentasi Teknis](docs/TECHNICAL.md)
+
+---
+
+*Terakhir diperbarui: April 2026*

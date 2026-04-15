@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
 import ConfirmModal from "@/components/ConfirmModal";
+import UploadProgressBar from "@/components/UploadProgressBar";
+import { uploadFiles as uploadFilesUtil, type UploadProgress } from "@/lib/upload";
 
 interface NewsItem {
   id: string;
@@ -18,19 +20,22 @@ export default function NewsPage() {
   const [newsList, setNewsList] = useState<NewsItem[]>([]);
   const [form, setForm] = useState({ title: "", content: "" });
   const [existingUrls, setExistingUrls] = useState<string[]>([]);
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingImages, setPendingImages] = useState<{ file: File; previewUrl: string }[]>([]);
+  const pendingImagesRef = useRef<{ file: File; previewUrl: string }[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  const pendingPreviews = useMemo(
-    () => pendingFiles.map((f) => URL.createObjectURL(f)),
-    [pendingFiles]
-  );
+  const [uploadProgress, setUploadProgress] = useState<(UploadProgress & { current?: number; totalFiles?: number }) | null>(null);
 
   useEffect(() => {
-    return () => pendingPreviews.forEach((url) => URL.revokeObjectURL(url));
-  }, [pendingPreviews]);
+    pendingImagesRef.current = pendingImages;
+  }, [pendingImages]);
+
+  useEffect(() => {
+    return () => {
+      pendingImagesRef.current.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+    };
+  }, []);
 
   async function loadData() {
     const res = await fetch("/api/news");
@@ -42,37 +47,40 @@ export default function NewsPage() {
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) setPendingFiles((prev) => [...prev, ...files]);
+    if (files.length > 0) {
+      const newItems = files.map((file) => ({ file, previewUrl: URL.createObjectURL(file) }));
+      setPendingImages((prev) => [...prev, ...newItems]);
+    }
     e.target.value = "";
   }
 
   function removePendingFile(index: number) {
-    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+    setPendingImages((prev) => {
+      const target = prev[index];
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
   }
 
   function removeExistingUrl(index: number) {
     setExistingUrls((prev) => prev.filter((_, i) => i !== index));
   }
 
-  async function uploadFiles(files: File[]): Promise<string[]> {
-    const urls: string[] = [];
-    for (const file of files) {
-      const fd = new FormData();
-      fd.append("file", file);
-      try {
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        const data = await res.json();
-        if (data.success) urls.push(data.data.url);
-      } catch { /* skip failed */ }
-    }
-    return urls;
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
-    const uploadedUrls = await uploadFiles(pendingFiles);
+    let uploadedUrls: string[] = [];
+    if (pendingImages.length > 0) {
+      try {
+        uploadedUrls = await uploadFilesUtil(pendingImages.map((img) => img.file), (p) => setUploadProgress(p));
+      } catch {
+        setLoading(false);
+        setUploadProgress(null);
+        return;
+      }
+    }
+    setUploadProgress(null);
     const allUrls = [...existingUrls, ...uploadedUrls];
 
     const payload = { ...form, imageUrls: allUrls };
@@ -93,7 +101,10 @@ export default function NewsPage() {
 
     setForm({ title: "", content: "" });
     setExistingUrls([]);
-    setPendingFiles([]);
+    setPendingImages((prev) => {
+      prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      return [];
+    });
     setEditing(null);
     setLoading(false);
     loadData();
@@ -109,7 +120,10 @@ export default function NewsPage() {
     setEditing(n.id);
     setForm({ title: n.title, content: n.content });
     setExistingUrls(n.imageUrls || []);
-    setPendingFiles([]);
+    setPendingImages((prev) => {
+      prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      return [];
+    });
   }
 
   return (
@@ -143,7 +157,7 @@ export default function NewsPage() {
             Pilih File
             <input type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
           </label>
-          {(existingUrls.length > 0 || pendingFiles.length > 0) && (
+          {(existingUrls.length > 0 || pendingImages.length > 0) && (
             <div className="mt-2 flex flex-wrap gap-2">
               {existingUrls.map((url, idx) => (
                 <div key={`existing-${idx}`} className="relative group">
@@ -152,9 +166,9 @@ export default function NewsPage() {
                     className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-80 group-hover:opacity-100 transition">✕</button>
                 </div>
               ))}
-              {pendingFiles.map((_, idx) => (
+              {pendingImages.map((img, idx) => (
                 <div key={`pending-${idx}`} className="relative group">
-                  <img src={pendingPreviews[idx]} alt="" className="w-24 h-24 object-cover rounded border-2 border-dashed border-yellow-500" />
+                  <img src={img.previewUrl} alt="" className="w-24 h-24 object-cover rounded border-2 border-dashed border-yellow-500" />
                   <button type="button" onClick={() => removePendingFile(idx)}
                     className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-80 group-hover:opacity-100 transition">✕</button>
                 </div>
@@ -162,15 +176,30 @@ export default function NewsPage() {
             </div>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-3">
+          {uploadProgress && (
+            <div className="max-w-md">
+              <UploadProgressBar progress={uploadProgress} />
+            </div>
+          )}
+          <div className="flex gap-2">
           <button type="submit" disabled={loading}
             className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
             {loading ? "Uploading & Saving..." : editing ? "Update" : "Tambah"}
           </button>
           {editing && (
-            <button type="button" onClick={() => { setEditing(null); setForm({ title: "", content: "" }); setExistingUrls([]); setPendingFiles([]); }}
+            <button type="button" onClick={() => {
+              setEditing(null);
+              setForm({ title: "", content: "" });
+              setExistingUrls([]);
+              setPendingImages((prev) => {
+                prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+                return [];
+              });
+            }}
               className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition">Batal</button>
           )}
+          </div>
         </div>
       </form>
 

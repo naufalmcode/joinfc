@@ -4,6 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
 import { useI18n } from "@/lib/i18n";
 import ConfirmModal from "@/components/ConfirmModal";
+import UploadProgressBar from "@/components/UploadProgressBar";
+import { uploadFile, type UploadProgress } from "@/lib/upload";
 
 interface VoteOptionItem {
   id: string;
@@ -35,6 +37,7 @@ export default function VotesPage() {
   const [editing, setEditing] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<(UploadProgress & { current?: number; totalFiles?: number }) | null>(null);
 
   async function loadData() {
     const res = await fetch("/api/votes");
@@ -73,23 +76,24 @@ export default function VotesPage() {
     setLoading(true);
 
     // Upload pending files first
-    const resolvedOptions = await Promise.all(
-      options.filter((o) => o.name.trim()).map(async (o) => {
-        let imageUrl = o.imageUrl || undefined;
-        if (o.pendingFile) {
-          const formData = new FormData();
-          formData.append("file", o.pendingFile);
-          try {
-            const res = await fetch("/api/upload", { method: "POST", body: formData });
-            const data = await res.json();
-            if (data.success) imageUrl = data.data.url;
-          } catch {
-            alert("Gagal upload gambar.");
-          }
+    const filesToUpload = options.filter((o) => o.name.trim() && o.pendingFile);
+    let uploadIdx = 0;
+    const resolvedOptions = [];
+    for (const o of options.filter((o) => o.name.trim())) {
+      let imageUrl = o.imageUrl || undefined;
+      if (o.pendingFile) {
+        try {
+          uploadIdx++;
+          imageUrl = await uploadFile(o.pendingFile, (p) => {
+            setUploadProgress({ ...p, current: uploadIdx, totalFiles: filesToUpload.length });
+          });
+        } catch {
+          alert("Gagal upload gambar.");
         }
-        return { name: o.name, imageUrl };
-      })
-    );
+      }
+      resolvedOptions.push({ name: o.name, imageUrl });
+    }
+    setUploadProgress(null);
 
     const payload = { title, options: resolvedOptions };
 
@@ -223,7 +227,13 @@ export default function VotesPage() {
           </button>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3">
+          {uploadProgress && (
+            <div className="max-w-md">
+              <UploadProgressBar progress={uploadProgress} />
+            </div>
+          )}
+          <div className="flex gap-3">
           <button
             type="submit"
             disabled={loading}
@@ -241,6 +251,7 @@ export default function VotesPage() {
               Batal
             </button>
           )}
+          </div>
         </div>
       </form>
 

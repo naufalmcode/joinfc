@@ -83,14 +83,18 @@ model EventRegistration {
 }
 
 model JerseyLaunch {
-  id            String               @id @default(uuid())
-  title         String
-  designUrls    String[]             @default([])
-  slug          String               @unique
-  status        String               @default("open")
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  registrations JerseyRegistration[]
+  id              String               @id @default(uuid())
+  title           String
+  designUrls      String[]             @default([])
+  slug            String               @unique
+  status          String               @default("open")
+  basePrice       Int                  @default(0)
+  shirtOnlyPrice  Int?
+  shortsOnlyPrice Int?
+  sizeSurcharges  String               @default("{}")
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  registrations   JerseyRegistration[]
 
   @@map("jersey_launches")
 }
@@ -104,6 +108,8 @@ model JerseyRegistration {
   number         Int
   size           String       @default("L")
   jerseyType     String       @default("player")
+  itemType       String       @default("set")
+  totalPrice     Int          @default(0)
   createdAt      DateTime     @default(now())
   jerseyLaunch   JerseyLaunch @relation(fields: [jerseyLaunchId], references: [id], onDelete: Cascade)
 

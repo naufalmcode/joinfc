@@ -196,7 +196,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
               <div>
                 <label className="block text-gray-300 text-sm mb-1">{t("position")} <span className="text-red-400">*</span></label>
                 <div className="grid grid-cols-2 gap-3">
-                  <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer border-2 transition ${
+                  <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer border-2 transition select-none ${
                     form.position === "player" ? "border-green-500 bg-green-900/30" : "border-gray-600 bg-gray-700"
                   }`}>
                     <input type="radio" name="position" value="player" checked={form.position === "player"}
@@ -205,7 +205,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                     <span className="text-white font-medium">{t("player")}</span>
                     <span className="text-xs text-gray-400">({confirmedPlayers.length}/{event.maxPlayers})</span>
                   </label>
-                  <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer border-2 transition ${
+                  <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer border-2 transition select-none ${
                     form.position === "goalkeeper" ? "border-blue-500 bg-blue-900/30" : "border-gray-600 bg-gray-700"
                   }`}>
                     <input type="radio" name="position" value="goalkeeper" checked={form.position === "goalkeeper"}

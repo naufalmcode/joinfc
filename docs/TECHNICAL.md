@@ -1,4 +1,4 @@
-# JOIN Football Community — Dokumentasi Teknis
+﻿# JOIN Football Community - Dokumentasi Teknis
 
 ## Daftar Isi
 - [Arsitektur](#arsitektur)
@@ -15,122 +15,127 @@
 
 ## Arsitektur
 
-Aplikasi ini menggunakan **Next.js 16 (App Router)** dengan arsitektur **SOLID** (Repository → Service → DI Container → API Route). Database menggunakan **Neon PostgreSQL** via **Prisma ORM**.
+Aplikasi ini menggunakan **Next.js 16 (App Router)** dengan arsitektur **SOLID** (Repository -> Service -> DI Container -> API Route). Database menggunakan **Neon PostgreSQL** via **Prisma ORM**. File upload menggunakan **Vercel Blob** storage.
 
 ```
 Browser
-  ↓
+  |
 Next.js App Router (src/app/)
-  ├── User Pages (/, /event/[id], /jersey/[slug], /highlight/[id], /vote/[id])
-  ├── Admin Pages (/manage-jfc/dashboard/*)
-  └── API Routes (/api/*)
-        ↓
+  |-- User Pages (/, /event/[id], /jersey/[slug], /highlight/[id], /vote/[id])
+  |-- Admin Pages (/manage-jfc/dashboard/*)
+  +-- API Routes (/api/*)
+        |
     Service Layer (src/lib/services/)
-        ↓
+        |
     Repository Layer (src/lib/repositories/)
-        ↓
-    Prisma ORM → Neon PostgreSQL
+        |
+    Prisma ORM -> Neon PostgreSQL
+        
+    File Upload -> Vercel Blob Storage (@vercel/blob)
 ```
 
 ## Tech Stack
 
 | Teknologi | Versi | Kegunaan |
 |-----------|-------|----------|
-| Next.js | 16.2.3 | Framework React fullstack |
+| Next.js | 16.2.3 | Framework React fullstack (App Router + Turbopack) |
+| React | 19.2.4 | UI library |
 | TypeScript | 5.x | Type safety |
 | Tailwind CSS | 4.x | Styling |
 | Prisma | 6.19.3 | ORM database |
 | Neon PostgreSQL | - | Database cloud |
+| @vercel/blob | 2.3.3 | Cloud file/image storage |
+| bcryptjs | 3.0.3 | Password hashing |
 | date-fns | 4.x | Formatting tanggal |
 | xlsx | 0.18.x | Export Excel |
+| uuid | 13.x | Generate unique filenames |
 
 ## Struktur Folder
 
 ```
 joinfc/
-├── prisma/
-│   └── schema.prisma              # Database schema
-├── public/
-│   └── uploads/                   # File uploads (images)
-├── src/
-│   ├── app/
-│   │   ├── globals.css            # Global CSS + admin theme utilities
-│   │   ├── layout.tsx             # Root layout (I18nProvider)
-│   │   ├── page.tsx               # Homepage (user-facing)
-│   │   ├── event/[id]/page.tsx    # Detail event & registrasi
-│   │   ├── highlight/[id]/page.tsx # Detail galeri (judul, gambar, deskripsi)
-│   │   ├── jersey/[slug]/page.tsx # Detail jersey & order
-│   │   ├── manage-jfc/
-│   │   │   ├── page.tsx           # Admin login
-│   │   │   ├── layout.tsx         # Auth check wrapper
-│   │   │   └── dashboard/
-│   │   │       ├── layout.tsx     # Sidebar + AdminThemeProvider + I18nProvider
-│   │   │       ├── page.tsx       # Dashboard overview
-│   │   │       ├── settings/      # Pengaturan website (link ke ubah password)
-│   │   │       ├── password/      # Ubah password admin (halaman terpisah)
-│   │   │       ├── highlights/    # Galeri aktivitas (CRUD + rich text)
-│   │   │       ├── news/          # Berita & aktivitas (CRUD)
-│   │   │       ├── events/        # Open events (CRUD + registrasi + download report)
-│   │   │       ├── jerseys/       # Jersey launch (CRUD + registrasi + download report)
-│   │   │       └── votes/         # Voting system (CRUD)
-│   │   └── api/                   # REST API routes
-│   │       ├── auth/              # Login/logout
-│   │       ├── settings/          # Site settings
-│   │       ├── settings/password/ # Ubah password admin
-│   │       ├── highlights/        # Galeri CRUD
-│   │       ├── news/              # News CRUD
-│   │       ├── calendar/          # Calendar CRUD (legacy)
-│   │       ├── events/            # Events + registrasi
-│   │       ├── events/registrations/ # Admin kelola registrasi (PATCH/DELETE)
-│   │       ├── jerseys/           # Jerseys + registrasi
-│   │       ├── votes/             # Voting CRUD + cast vote
-│   │       ├── reports/           # Excel export
-│   │       └── upload/            # File upload handler
-│   ├── components/
-│   │   └── ConfirmModal.tsx       # Custom confirm/alert popup
-│   └── lib/
-│       ├── admin-theme.tsx        # Admin theme context (CSS variables)
-│       ├── container.ts           # DI container
-│       ├── prisma.ts              # Prisma client singleton
-│       ├── i18n/
-│       │   ├── index.tsx          # I18nProvider, useI18n, LanguageToggle
-│       │   └── translations.ts   # ID/EN translation dictionary
-│       ├── interfaces/
-│       │   ├── repository.interfaces.ts
-│       │   └── service.interfaces.ts
-│       ├── repositories/
-│       │   ├── event.repository.ts
-│       │   ├── highlight.repository.ts
-│       │   ├── jersey.repository.ts
-│       │   ├── news.repository.ts
-│       │   ├── vote.repository.ts
-│       │   ├── schedule.repository.ts
-│       │   └── settings.repository.ts
-│       └── services/
-│           ├── event.service.ts
-│           ├── highlight.service.ts
-│           ├── jersey.service.ts
-│           ├── news.service.ts
-│           ├── report.service.ts
-│           ├── vote.service.ts
-│           ├── schedule.service.ts
-│           └── settings.service.ts
-├── .env                           # Environment variables
-├── package.json
-└── tsconfig.json
+|-- prisma/
+|   +-- schema.prisma              # Database schema
+|-- src/
+|   |-- app/
+|   |   |-- globals.css            # Global CSS + admin theme + caret-color
+|   |   |-- layout.tsx             # Root layout (I18nProvider)
+|   |   |-- page.tsx               # Homepage (user-facing)
+|   |   |-- event/[id]/page.tsx    # Detail event & registrasi
+|   |   |-- highlight/[id]/page.tsx # Detail galeri (judul, gambar, deskripsi)
+|   |   |-- jersey/[slug]/page.tsx # Detail jersey & order
+|   |   |-- vote/[id]/page.tsx     # Detail voting & cast vote
+|   |   |-- manage-jfc/
+|   |   |   |-- page.tsx           # Admin login
+|   |   |   |-- layout.tsx         # Auth check wrapper
+|   |   |   +-- dashboard/
+|   |   |       |-- layout.tsx     # Sidebar (7 menu) + AdminThemeProvider
+|   |   |       |-- page.tsx       # Dashboard overview
+|   |   |       |-- settings/      # Pengaturan website
+|   |   |       |-- password/      # Ubah password admin (halaman terpisah)
+|   |   |       |-- highlights/    # Galeri aktivitas (CRUD + rich text)
+|   |   |       |-- news/          # Berita (CRUD + multi-image)
+|   |   |       |-- events/        # Events (CRUD + registrasi + report)
+|   |   |       |-- jerseys/       # Jersey launch (CRUD + registrasi + report)
+|   |   |       +-- votes/         # Voting system (CRUD)
+|   |   +-- api/                   # REST API routes
+|   |       |-- auth/              # Login/logout
+|   |       |-- settings/          # Site settings + password
+|   |       |-- highlights/        # Galeri CRUD
+|   |       |-- news/              # News CRUD
+|   |       |-- events/            # Events + registrasi
+|   |       |-- events/registrations/ # Admin kelola registrasi
+|   |       |-- jerseys/           # Jerseys + registrasi
+|   |       |-- votes/             # Voting CRUD + cast vote
+|   |       |-- reports/           # Excel export
+|   |       +-- upload/            # File upload (Vercel Blob)
+|   |-- components/
+|   |   +-- ConfirmModal.tsx       # Custom confirm/alert popup
+|   +-- lib/
+|       |-- admin-theme.tsx        # Admin theme context (CSS variables)
+|       |-- container.ts           # DI container
+|       |-- prisma.ts              # Prisma client singleton
+|       |-- auth.ts                # Admin session validation
+|       |-- api-utils.ts           # Response helpers
+|       |-- i18n/
+|       |   |-- index.tsx          # I18nProvider, useI18n, LanguageToggle
+|       |   +-- translations.ts   # ID/EN translation dictionary (~240+ keys)
+|       |-- interfaces/
+|       |   |-- repository.interfaces.ts
+|       |   +-- service.interfaces.ts
+|       |-- repositories/
+|       |   |-- event.repository.ts
+|       |   |-- highlight.repository.ts
+|       |   |-- jersey.repository.ts
+|       |   |-- news.repository.ts
+|       |   |-- vote.repository.ts
+|       |   |-- schedule.repository.ts
+|       |   +-- settings.repository.ts
+|       +-- services/
+|           |-- event.service.ts
+|           |-- highlight.service.ts
+|           |-- jersey.service.ts
+|           |-- news.service.ts
+|           |-- report.service.ts
+|           |-- vote.service.ts
+|           |-- schedule.service.ts
+|           +-- settings.service.ts
+|-- .env                           # Environment variables
+|-- package.json                   # Build: "prisma generate && next build"
++-- tsconfig.json
 ```
 
 ## Setup & Running Lokal
 
 ### Prasyarat
-- **Node.js** v18+ 
+- **Node.js** v18+
 - **npm** (bundled dengan Node.js)
-- Akses internet (koneksi ke database Neon)
+- Akses internet (koneksi ke database Neon + Vercel Blob)
 
 ### Langkah Instalasi
 
 ```bash
-# 1. Clone / buka folder project
+# 1. Buka folder project
 cd d:\Project\joinfc
 
 # 2. Install dependencies
@@ -139,127 +144,129 @@ npm install
 # 3. Generate Prisma client
 npx prisma generate
 
-# 4. (Opsional) Jalankan migrasi database
+# 4. (Opsional) Deploy migrasi database
 npx prisma migrate deploy
 ```
 
-### Menjalankan Lokal (Development)
+### Environment Variables
+
+Buat file `.env` di root project:
+```
+DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxx
+```
+
+### Menjalankan Lokal
 
 ```bash
-# Start development server
 npm run dev
 ```
 
-Server akan berjalan di **http://localhost:3000**
+Server berjalan di **http://localhost:3000**
 
 - Homepage: http://localhost:3000
 - Admin login: http://localhost:3000/manage-jfc
-- Password admin default: `admjoinfc2020` (disimpan di tabel `site_settings.adminPassword`, bisa diubah via admin panel)
+- Password admin default: `admjoinfc2020`
 
-### Menghentikan Server Lokal
-
-```bash
-# Di terminal yang sedang running, tekan:
-Ctrl + C
-
-# Jika terminal sudah ditutup, cari proses dan kill:
-# Windows PowerShell:
-Get-Process -Name node | Stop-Process -Force
-
-# Atau kill port tertentu:
-netstat -ano | findstr :3000
-taskkill /PID <PID_NUMBER> /F
-```
-
-### Build Production
+### Build & Deploy
 
 ```bash
-# Build untuk production
-npx next build
+# Build production (otomatis prisma generate + next build)
+npm run build
 
 # Jalankan production server
 npx next start
 ```
 
+**Deploy ke Vercel**: Set `DATABASE_URL` dan `BLOB_READ_WRITE_TOKEN` di Vercel environment variables. Build command otomatis dari package.json.
+
 ## Database
 
 ### Schema (Model Utama)
 
-| Model | Deskripsi |
-|-------|-----------|
-| `SiteSettings` | Pengaturan website (nama, warna, logo, social media, hero, admin password) |
-| `Highlight` | Gambar galeri aktivitas |
-| `News` | Berita & artikel |
-| `CalendarSchedule` | Jadwal main / kalender (legacy, tidak digunakan admin) |
-| `Event` | Open event (main bareng) — data ini juga tampil di kalender homepage |
-| `EventRegistration` | Pendaftaran peserta event (player/goalkeeper) |
-| `JerseyLaunch` | Launch jersey baru (multi-image: `designUrls String[]`) |
-| `JerseyRegistration` | Pemesanan jersey (nama pendaftar, nama jersey, nomor, ukuran) |
-| `Vote` | Voting / polling (judul, status open/closed) |
-| `VoteOption` | Pilihan dalam voting (nama, gambar opsional, sortOrder) |
-| `VoteResponse` | Respons/suara dari user pada voting |
+| Model | Tabel | Deskripsi |
+|-------|-------|-----------|
+| `SiteSettings` | site_settings | Pengaturan website (nama, warna, logo, social media, hero, admin password) |
+| `Highlight` | highlights | Gambar galeri aktivitas (judul, deskripsi rich text, gambar) |
+| `News` | news | Berita & artikel (judul, konten, **multi-image: imageUrls String[]**) |
+| `CalendarSchedule` | calendar_schedules | Jadwal kalender (legacy, tidak digunakan admin) |
+| `Event` | events | Open event / main bareng |
+| `EventRegistration` | event_registrations | Pendaftaran peserta event (player/goalkeeper) |
+| `JerseyLaunch` | jersey_launches | Launch jersey baru (**multi-image: designUrls String[]**) |
+| `JerseyRegistration` | jersey_registrations | Pemesanan jersey (pendaftar, nama jersey, nomor, ukuran, **tipe**) |
+| `AdminSession` | admin_sessions | Session login admin (token + expiry) |
+| `Vote` | votes | Voting / polling (judul, status open/closed) |
+| `VoteOption` | vote_options | Pilihan dalam voting (nama, gambar opsional) |
+| `VoteResponse` | vote_responses | Respons/suara user pada voting |
 
 ### Field Penting
 
 **SiteSettings:**
-- `primaryColor`, `secondaryColor`, `accentColor` — Warna tema (berlaku di user & admin)
-- `instagramUrl`, `whatsappUrl` — Link sosial media
-- `heroType` ("gradient" | "image") — Tipe background header
-- `heroImageUrl` — URL gambar header (jika heroType = "image")
-- `adminPassword` — Password login admin (default: "admjoinfc2020", bisa diubah di Settings)
+- `primaryColor`, `secondaryColor`, `accentColor` - Warna tema (berlaku di user & admin)
+- `instagramUrl`, `whatsappUrl` - Link sosial media
+- `heroType` ("gradient" | "image") - Tipe background header
+- `heroImageUrl` - URL gambar header (jika heroType = "image")
+- `adminPassword` - Password login admin (default: "admjoinfc2020", bisa diubah via admin)
+
+**News:**
+- `imageUrls String[]` - Array URL gambar (mendukung multi-foto per berita)
 
 **Event:**
-- `maxPlayers` — Kuota maksimal pemain
-- `maxGoalkeepers` — Kuota maksimal kiper  
-- `locationUrl` — Link Google Maps lokasi
+- `maxPlayers` - Kuota maksimal pemain
+- `maxGoalkeepers` - Kuota maksimal kiper (default: 3)
+- `locationUrl` - Link Google Maps lokasi
 
 **EventRegistration:**
-- `position` ("player" | "goalkeeper") — Posisi pendaftar
-- `status` ("registered" | "confirmed") — Default "registered", admin konfirmasi manual via admin panel
-- `phone` — Opsional (tidak wajib diisi saat registrasi)
+- `position` ("player" | "goalkeeper") - Posisi pendaftar
+- `status` ("confirmed" | "registered" | "waiting") - Status registrasi
+- `phone` - Opsional (tidak wajib diisi saat registrasi)
+
+**JerseyLaunch:**
+- `designUrls String[]` - Array URL gambar desain jersey (multi-image)
+- `basePrice` - Harga dasar jersey
+- `sizeSurcharges` - JSON string berisi array `{ size, itemType, surcharge }` untuk tambahan harga per ukuran/tipe
+
+**JerseyRegistration:**
+- `registrantName` - Nama lengkap pemesan
+- `name` - Nama yang dicetak di jersey
+- `number` - Nomor jersey (1-99, unique per launch)
+- `size` - Ukuran (S/M/L/XL/XXL/3XL/4XL/5XL/6XL)
+- `jerseyType` - Tipe jersey ("player" | "goalkeeper", default: "player")
+- `itemType` - Tipe item ("set" | "shirt" | "shorts", default: "set")
+- `totalPrice` - Harga total (basePrice + surcharge matching size+itemType)
 
 **Vote:**
-- `title` — Judul voting
-- `status` ("open" | "closed") — Admin bisa toggle open/close
-- `options` — Relasi ke VoteOption (nama + gambar opsional)
+- `status` ("open" | "closed") - Admin bisa toggle
 
 **VoteOption:**
-- `name` — Nama pilihan
-- `imageUrl` — Gambar opsional (untuk visual voting seperti desain jersey)
-- `sortOrder` — Urutan tampil
+- `name` - Nama pilihan
+- `imageUrl` - Gambar opsional
+- `sortOrder` - Urutan tampil
 
 ### Migrasi
 
 ```bash
-# Melihat status migrasi
-npx prisma migrate status
-
-# Deploy migrasi (production)
-npx prisma migrate deploy
-
-# Buat migrasi baru (development)
-npx prisma migrate dev --name nama_migrasi
-
-# Reset database (HATI-HATI: hapus semua data)
-npx prisma migrate reset
+npx prisma migrate status    # Cek status migrasi
+npx prisma migrate deploy    # Deploy migrasi (production)
+npx prisma migrate dev       # Buat migrasi baru (development)
+npx prisma db push           # Push schema tanpa migrasi file
 ```
 
 ## Arsitektur SOLID
 
 ### Repository Pattern
-Setiap model database memiliki repository sendiri di `src/lib/repositories/`. Repository hanya berkomunikasi dengan database via Prisma.
+Setiap model database memiliki repository di `src/lib/repositories/`. Repository hanya berkomunikasi dengan database via Prisma.
 
 ### Service Pattern
 Layer bisnis logika di `src/lib/services/`. Service memanggil repository dan berisi validasi/logika bisnis.
 
 ### DI Container
-`src/lib/container.ts` mengelola instansiasi semua repository dan service. API routes mengimpor dari container.
+`src/lib/container.ts` mengelola instansiasi semua repository dan service. API routes mengimpor service dari container.
 
 ```typescript
 // Contoh penggunaan di API route:
-import { container } from "@/lib/container";
-
-const events = await container.eventService.findAll();
+import { eventService } from "@/lib/container";
+const events = await eventService.findAll();
 ```
 
 ## API Routes
@@ -275,137 +282,155 @@ const events = await container.eventService.findAll();
 | PUT/DELETE | `/api/highlights/[id]` | Update/hapus galeri |
 | GET/POST | `/api/news` | List/create berita |
 | PUT/DELETE | `/api/news/[id]` | Update/hapus berita |
-| GET/POST | `/api/calendar` | List/create jadwal |
-| PUT/DELETE | `/api/calendar/[id]` | Update/hapus jadwal |
 | GET/POST | `/api/events` | List/create event |
 | GET/PUT/DELETE | `/api/events/[id]` | Detail/update/hapus event |
 | POST | `/api/events/[id]/register` | Daftar event |
+| PATCH/DELETE | `/api/events/registrations/[regId]` | Admin kelola registrasi |
 | GET/POST | `/api/jerseys` | List/create jersey |
 | PUT/DELETE | `/api/jerseys/[id]` | Update/hapus jersey |
 | GET | `/api/jerseys/slug/[slug]` | Detail jersey by slug |
 | POST | `/api/jerseys/[id]/register` | Pesan jersey |
-| GET | `/api/reports?type=...` | Download Excel report |
-| PATCH/DELETE | `/api/events/registrations/[regId]` | Admin kelola registrasi (status/posisi/hapus) |
 | GET/POST | `/api/votes` | List/create voting |
 | GET/PUT/DELETE | `/api/votes/[id]` | Detail/update/hapus voting |
-| POST | `/api/votes/[id]/vote` | Cast vote (pilih opsi) |
-| POST | `/api/upload` | Upload file/gambar |
+| POST | `/api/votes/[id]/vote` | Cast vote |
+| GET | `/api/reports?type=...` | Download Excel report |
+| POST | `/api/upload` | Upload file ke Vercel Blob |
 
 ## Fitur Utama
 
 ### 1. Internasionalisasi (i18n)
 - Bahasa Indonesia (default) dan English
-- Toggle bahasa di pojok kanan atas halaman user
-- Toggle bahasa juga tersedia di sidebar admin panel
+- Toggle bahasa di pojok kanan atas (user) dan sidebar (admin)
 - Stored di localStorage key `jfc_lang`
-- ~230+ translation keys di `src/lib/i18n/translations.ts`
-- Admin panel: navigasi sidebar, label, dan teks menggunakan i18n
+- ~240+ translation keys di `src/lib/i18n/translations.ts`
 
 ### 2. Sistem Tema Warna
 - 3 warna tema: Primary, Secondary, Accent
 - Dikonfigurasi di admin settings
 - Berlaku di halaman user DAN admin
-- Admin menggunakan CSS custom properties (`--admin-primary`, `--admin-secondary`, `--admin-accent`)
-- User halaman menggunakan inline styles dari API settings
+- Admin: CSS custom properties (`--admin-primary`, dll)
+- User: inline styles dari API settings
+- Tombol "Kembali ke Beranda" di semua halaman detail menggunakan `backgroundColor: primary`
+- Tanggal event di homepage menggunakan warna `accent` (agar terlihat di background gelap)
 
-### 3. Event & Registrasi
+### 3. Deferred Upload
+- Semua admin pages menggunakan pola deferred upload
+- File dipilih -> disimpan di React state sebagai `File` object -> preview via `URL.createObjectURL()`
+- Preview ditampilkan dengan border kuning putus-putus (`border-dashed border-yellow-500`)
+- File baru diupload ke Vercel Blob saat form di-submit
+- Mendukung hapus individual sebelum submit
+- Halaman yang menggunakan: Settings (logo + hero), Galeri, Berita (multi), Jersey (multi), Votes (per opsi)
+
+### 4. Event & Registrasi
 - Registrasi berbasis posisi (Pemain/Kiper)
-- Kuota terpisah per posisi
-- Status default "registered", admin konfirmasi manual (Confirm/Unconfirm)
-- Admin bisa pindah posisi (Kiper ↔ Pemain) dan hapus registrasi
-- Daftar kiper ditampilkan di atas daftar pemain
-- Phone opsional saat registrasi, field wajib ditandai asterisk merah (*)
+- Kuota terpisah per posisi (maxPlayers + maxGoalkeepers)
+- **Auto waiting list**: saat registrasi, backend menghitung jumlah registered+confirmed untuk posisi tersebut. Jika >= kuota, status otomatis `"waiting"`, jika tidak `"registered"`
+- Status bisa diubah admin via dropdown: **Waiting** ↔ **Registered** ↔ **Confirmed**
+- Admin bisa pindah posisi (Kiper ↔ Pemain), hapus registrasi
+- Waiting list ditampilkan terpisah per posisi (kiper dan pemain) di halaman publik
+- Phone opsional, field wajib ditandai asterisk merah (*)
 - Link lokasi Google Maps
+- `countByEventIdAndPosition()` menghitung registrasi dengan status `IN ["registered", "confirmed"]` (waiting tidak dihitung)
 
-### 4. Jersey Launch
+### 5. Jersey Launch
 - Grid nomor 1-99 dengan tooltip nama pemilik
-- Hover di nomor yang sudah diambil menunjukkan nama pendaftar
-- Field "Nama Pendaftar" (pemesan) terpisah dari "Nama Jersey" (tercetak di jersey)
-- Pemilihan ukuran (S/M/L/XL/XXL)
-- Multi-image upload untuk desain jersey (`designUrls String[]`)
-- Laporan Excel: kolom Pendaftar + Nama Jersey (tanpa phone)
+- Field "Nama Pendaftar" terpisah dari "Nama Jersey" (tercetak)
+- Ukuran: S/M/L/XL/XXL/3XL/4XL/5XL/6XL
+- Tipe jersey: Pemain atau Kiper (`jerseyType`)
+- Tipe item: 1 Stel / Baju Saja / Celana Saja (`itemType`)
+- **Harga**: `basePrice` + `surcharge` per ukuran+tipe. Surcharge disimpan sebagai JSON array di `sizeSurcharges`. Lookup: exact match size+itemType dulu, fallback ke size-only
+- Multi-image upload desain (`designUrls String[]`)
+- Input harga di admin menggunakan format Rupiah otomatis (Rp + pemisah ribuan) via `formatNumber()`/`parseNumber()`
+- Harga di halaman publik dihitung otomatis berdasarkan pilihan ukuran dan tipe item
 
-### 5. Hero Background
+### 6. Berita Multi-Foto
+- Berita mendukung multiple gambar (`imageUrls String[]`)
+- Bisa hapus foto individual
+- Homepage menampilkan foto pertama dari array
+- Admin list: thumbnail max 2 foto + badge "+N"
+
+### 7. Hero Background
 - Pilihan gradient warna atau gambar upload
 - Dikonfigurasi di admin settings
 
-### 6. Sosial Media
+### 8. Sosial Media
 - Instagram & WhatsApp link
 - Ditampilkan di hero homepage dan footer
-- Dikonfigurasi di admin settings
 
-### 7. Export Excel
-- Download laporan event per-event atau semua event (tombol di halaman Events admin)
-- Download laporan jersey per-jersey (tombol di halaman Jersey admin)
-- Report terintegrasi langsung di masing-masing halaman admin (tidak ada menu Reports terpisah)
+### 9. Export Excel
+- Download report event per-event atau semua event
+- Download report jersey per-jersey
+- Report terintegrasi di halaman Events dan Jersey admin (bukan menu terpisah)
 
-### 8. Kalender Event (Homepage)
-- Menampilkan kalender visual mini di homepage
-- Data diambil dari Event (bukan tabel terpisah)
-- Tanggal yang ada event ditandai warna primary
-- Hover menunjukkan detail event di tanggal tersebut
+### 10. Kalender Event (Homepage)
+- Kalender visual mini di homepage (sidebar kiri)
+- Data diambil dari tabel Event
+- Tanggal event ditandai warna primary, waktu ditampilkan warna accent
+- Hover/tap menunjukkan detail event
 - Navigasi bulan (prev/next)
 
-### 9. Custom Popup Modal
+### 11. Custom Popup Modal
 - Semua konfirmasi hapus menggunakan custom modal (bukan browser `confirm()`)
-- Komponen reusable di `src/components/ConfirmModal.tsx`
+- Komponen: `src/components/ConfirmModal.tsx`
 - Support mode "confirm" dan "alert"
+- Prop `open` (bukan `isOpen`)
 
-### 10. Flag Icons 
-- Language toggle menampilkan SVG bendera Indonesia dan Inggris
-- Terletak di pojok kanan atas halaman user dan di sidebar admin panel
+### 12. Voting System
+- Admin: create multiple voting, setiap opsi bisa punya gambar
+- Upload gambar opsi: deferred (per-option `pendingFile`)
+- User: klik opsi untuk vote, hasil ditampilkan real-time
+- 1 vote per user per polling (localStorage)
 
-### 11. Voting System
-- Admin bisa membuat multiple voting/polling
-- Setiap voting memiliki judul dan daftar pilihan (opsi)
-- Setiap opsi bisa memiliki nama dan gambar opsional (cocok untuk vote desain jersey)
-- Opsi bisa ditambah/kurang secara dinamis saat create/edit
-- Admin bisa open/close voting, edit, atau hapus
-- Admin panel menampilkan hasil voting dengan progress bar dan persentase
-- Homepage menampilkan voting yang open — user klik opsi untuk vote
-- Setelah vote, hasil ditampilkan dengan progress bar dan persentase
-- Upload gambar opsi menggunakan styled button (bukan browser default)
-
-### 12. Homepage 2-Column Layout
-- Setelah hero: layout 2 kolom (1/3 sidebar kiri + 2/3 konten kanan)
-- Sidebar kiri: kalender mini sticky + daftar event mendatang
-- Konten kanan: galeri (carousel horizontal), berita, events, jersey, voting
-
-### 13. Upload Dimension Recommendations
-- Semua area upload gambar menampilkan rekomendasi dimensi:
-  - Logo: 200×200 px (1:1, PNG transparan)
-  - Hero: 1920×600 px (16:5, landscape)
-  - Highlights: 800×600 px (4:3)
-  - News: 800×450 px (16:9)
-  - Jersey: 800×800 px (1:1, multiple)
-  - Vote options: 800×800 px (1:1)
+### 13. Homepage Layout
+- Layout 2 kolom setelah hero (1/3 + 2/3)
+- Sidebar kiri: kalender mini sticky + daftar event
+- Konten kanan: galeri carousel, berita, events, jersey, voting
 
 ### 14. Galeri Carousel & Detail Page
-- Galeri highlights ditampilkan sebagai carousel horizontal (scroll)
-- Klik gambar untuk melihat halaman detail (`/highlight/[id]`) dengan judul, gambar, dan deskripsi rich text
-- Admin bisa menambahkan deskripsi berformat (bold, italic, list, heading) via rich text editor
-- Custom scrollbar styling
+- Carousel horizontal di homepage (custom scrollbar)
+- **Urutan: terbaru dulu** (`createdAt: "desc"` di `findActive()`), admin list tetap `sortOrder: "asc"`
+- Klik -> halaman detail (`/highlight/[id]`) dengan rich text deskripsi
+- Admin: rich text editor (bold, italic, list, heading)
+- Admin: multi-file upload — saat tambah baru, setiap file menjadi 1 highlight terpisah
 
-### 15. Jersey Type
-- Pendaftaran jersey mendukung tipe Pemain (⚽) dan Kiper (🧤)
-- Selector button di halaman public jersey
-- Kolom tipe ditampilkan di tabel admin
+### 15. Caret-Color
+- `caret-color: transparent` di body (mencegah cursor text muncul saat klik teks biasa)
+- `caret-color: auto !important` untuk input, textarea, select, contenteditable (cursor tetap muncul saat mengetik)
 
 ### 16. Password Admin
-- Ubah password ada di halaman terpisah (`/manage-jfc/dashboard/password`)
+- Halaman terpisah (`/manage-jfc/dashboard/password`)
 - Diakses via link di halaman Pengaturan
 - Validasi: minimal 6 karakter, konfirmasi password harus cocok
 
+### 17. Upload Validation
+- Tipe file: hanya image (jpg, png, gif, webp, svg)
+- Maks ukuran: 20 MB
+- Filename: UUID + sanitized extension
+- Storage: Vercel Blob (bukan local filesystem)
+- **UHD Upscaling**: gambar di bawah 3840×2160 otomatis di-upscale via canvas sebelum upload. Output WebP (atau PNG untuk input PNG) quality 0.92
+- Upload menggunakan `fetch` dengan `credentials: "include"` untuk mengirim cookie auth
+- Fallback auth: jika `validateAdminSession()` gagal, API upload membaca cookie `jfc_admin_token` langsung dari request
+
+### 18. Rekomendasi Dimensi Upload
+- Logo: 200x200 px (1:1, PNG transparan)
+- Hero: 1920x600 px (16:5, landscape)
+- Highlights: 800x600 px (4:3)
+- News: 800x450 px (16:9)
+- Jersey: 800x800 px (1:1, multiple)
+- Vote options: 800x800 px (1:1)
+
 ## Environment Variables
 
-| Variable | Deskripsi | Contoh |
-|----------|-----------|--------|
-| `DATABASE_URL` | Connection string Neon PostgreSQL | `postgresql://user:pass@host/db?sslmode=require` |
-| `NEXT_PUBLIC_APP_URL` | Base URL aplikasi | `http://localhost:3000` |
+| Variable | Deskripsi | Wajib |
+|----------|-----------|-------|
+| `DATABASE_URL` | Connection string Neon PostgreSQL | Ya |
+| `BLOB_READ_WRITE_TOKEN` | Token Vercel Blob storage (upload gambar) | Ya |
 
-> **Catatan:** `DATABASE_URL` otomatis dibaca dari `.env` saat development lokal. Saat deploy (Vercel, Railway, dll), set di environment variables platform tersebut.
+> `DATABASE_URL` dibaca dari `.env` saat development. Saat deploy (Vercel), set di environment variables platform.
 
-> **Catatan:** Password admin sekarang disimpan di database (tabel `site_settings`, kolom `adminPassword`). Default: `admjoinfc2020`. Bisa diubah di halaman Settings admin panel.
+> `BLOB_READ_WRITE_TOKEN` didapat dari Vercel Blob dashboard. Tanpa token ini, upload gambar tidak berfungsi.
+
+> Password admin disimpan di database (`site_settings.adminPassword`). Default: `admjoinfc2020`. Bisa diubah di admin panel.
 
 ---
 

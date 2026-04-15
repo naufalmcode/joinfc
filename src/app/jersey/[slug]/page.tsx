@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useCallback } from "react";
 import Link from "next/link";
 import { useI18n, LanguageToggle } from "@/lib/i18n";
 
@@ -10,6 +10,8 @@ interface JerseyReg {
   number: number;
   size: string;
   jerseyType: string;
+  itemType: string;
+  totalPrice: number;
 }
 
 interface JerseyDetail {
@@ -18,16 +20,24 @@ interface JerseyDetail {
   designUrls: string[];
   slug: string;
   status: string;
+  basePrice: number;
+  shirtOnlyPrice: number | null;
+  shortsOnlyPrice: number | null;
+  sizeSurcharges: string;
   registrations: JerseyReg[];
 }
 
 const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
 
+function formatRupiah(amount: number): string {
+  return "Rp " + amount.toLocaleString("id-ID");
+}
+
 export default function JerseyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { t } = useI18n();
   const [jersey, setJersey] = useState<JerseyDetail | null>(null);
-  const [form, setForm] = useState({ registrantName: "", name: "", phone: "", number: 0, size: "L", jerseyType: "player" });
+  const [form, setForm] = useState({ registrantName: "", name: "", phone: "", number: 0, size: "L", jerseyType: "player", itemType: "set" });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
@@ -35,6 +45,8 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
   const [notFound, setNotFound] = useState(false);
   const [tappedNum, setTappedNum] = useState<number | null>(null);
   const [settings, setSettings] = useState<{ primaryColor: string } | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   async function loadJersey() {
     const res = await fetch(`/api/jerseys/slug/${slug}`);
@@ -58,6 +70,55 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
 
   const primary = settings?.primaryColor || "#16a34a";
 
+  const images = jersey?.designUrls || [];
+  const prevSlide = useCallback(() => setCurrentSlide((s) => (s - 1 + images.length) % images.length), [images.length]);
+  const nextSlide = useCallback(() => setCurrentSlide((s) => (s + 1) % images.length), [images.length]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "ArrowLeft") prevSlide();
+      if (e.key === "ArrowRight") nextSlide();
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [lightboxOpen, prevSlide, nextSlide]);
+
+  // Calculate price for display
+  function getCalculatedPrice(): number {
+    if (!jersey) return 0;
+    const itemType = form.itemType || "set";
+    let price = jersey.basePrice || 0;
+    try {
+      const surchargeList = JSON.parse(jersey.sizeSurcharges || "[]");
+      if (Array.isArray(surchargeList)) {
+        const exact = surchargeList.find((p: { size: string; itemType?: string; surcharge?: number; price?: number }) => p.size === form.size && (p.itemType || "set") === itemType);
+        if (exact) {
+          price += (exact.surcharge ?? exact.price ?? 0);
+        } else {
+          const bySize = surchargeList.find((p: { size: string; surcharge?: number; price?: number }) => p.size === form.size);
+          if (bySize) price += (bySize.surcharge ?? bySize.price ?? 0);
+        }
+      }
+    } catch { /* ignore */ }
+    return price;
+  }
+
+  // Get available item types from surcharge list
+  function getAvailableItemTypes(): string[] {
+    if (!jersey) return ["set"];
+    const types = new Set<string>(["set"]);
+    try {
+      const surchargeList = JSON.parse(jersey.sizeSurcharges || "[]");
+      if (Array.isArray(surchargeList)) {
+        surchargeList.forEach((p: { itemType?: string }) => { if (p.itemType) types.add(p.itemType); });
+      }
+    } catch { /* ignore */ }
+    return Array.from(types);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.number) {
@@ -77,7 +138,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
 
     if (data.success) {
       setResult(`Jersey #${form.number} (${form.size}) — ${form.name} ✓`);
-      setForm({ registrantName: "", name: "", phone: "", number: 0, size: "L", jerseyType: "player" });
+      setForm({ registrantName: "", name: "", phone: "", number: 0, size: "L", jerseyType: "player", itemType: "set" });
       loadJersey();
     } else {
       setError(data.error || "Failed");
@@ -105,6 +166,8 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
   }
 
   const takenNumbers = Object.keys(takenMap).map(Number);
+  const hasPrice = jersey.basePrice > 0;
+  const availableItemTypes = getAvailableItemTypes();
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -112,20 +175,64 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
         <LanguageToggle />
       </div>
 
+      {/* Lightbox Modal */}
+      {lightboxOpen && images.length > 0 && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onClick={() => setLightboxOpen(false)}>
+          <button onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white text-2xl transition z-10">&times;</button>
+          {images.length > 1 && (
+            <>
+              <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white text-2xl transition z-10">&#8249;</button>
+              <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white text-2xl transition z-10">&#8250;</button>
+            </>
+          )}
+          <img src={images[currentSlide]} alt={`${jersey.title} ${currentSlide + 1}`} className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
+          {images.length > 1 && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+              {images.map((_, idx) => (
+                <button key={idx} onClick={(e) => { e.stopPropagation(); setCurrentSlide(idx); }} className={`w-2.5 h-2.5 rounded-full transition ${idx === currentSlide ? "bg-white" : "bg-white/40"}`} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="max-w-3xl mx-auto px-4 py-12">
         <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-lg text-sm font-medium text-white transition hover:opacity-90" style={{ backgroundColor: primary }}>{t("backToHome")}</Link>
 
         <div className="bg-gray-800 rounded-xl overflow-hidden">
-          {(jersey.designUrls || []).length > 0 && (
-            <div className={`grid ${jersey.designUrls.length === 1 ? "grid-cols-1" : "grid-cols-2"} gap-1`}>
-              {jersey.designUrls.map((url, idx) => (
-                <img key={idx} src={url} alt={`${jersey.title} ${idx + 1}`} className={`w-full ${jersey.designUrls.length === 1 ? "h-72 md:h-96" : "h-48 md:h-64"} object-cover`} />
-              ))}
+          {/* Image Carousel */}
+          {images.length > 0 && (
+            <div className="relative group">
+              <img
+                src={images[currentSlide]}
+                alt={`${jersey.title} ${currentSlide + 1}`}
+                className="w-full h-72 md:h-96 object-cover cursor-pointer"
+                onClick={() => setLightboxOpen(true)}
+              />
+              {images.length > 1 && (
+                <>
+                  <button onClick={prevSlide} className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/70 rounded-full text-white text-xl transition opacity-0 group-hover:opacity-100">&#8249;</button>
+                  <button onClick={nextSlide} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/70 rounded-full text-white text-xl transition opacity-0 group-hover:opacity-100">&#8250;</button>
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {images.map((_, idx) => (
+                      <button key={idx} onClick={() => setCurrentSlide(idx)} className={`w-2 h-2 rounded-full transition ${idx === currentSlide ? "bg-white" : "bg-white/40"}`} />
+                    ))}
+                  </div>
+                </>
+              )}
+              {images.length > 1 && (
+                <div className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                  {currentSlide + 1} / {images.length}
+                </div>
+              )}
             </div>
           )}
           <div className="p-6 md:p-8">
             <h1 className="text-3xl font-bold">{jersey.title}</h1>
             <p className="text-gray-400 mt-2">{jersey.registrations.length} {t("peopleRegistered")}</p>
+            {hasPrice && (
+              <p className="text-green-400 font-semibold text-lg mt-1">{formatRupiah(jersey.basePrice)}</p>
+            )}
           </div>
         </div>
 
@@ -234,6 +341,53 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   </button>
                 </div>
               </div>
+              {/* Item Type Selector */}
+              {hasPrice && availableItemTypes.length > 1 && (
+                <div>
+                  <label className="block text-gray-300 text-sm mb-2">{t("itemTypeLabel")}</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {availableItemTypes.includes("set") && (
+                      <button
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, itemType: "set" }))}
+                        className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${
+                          form.itemType === "set"
+                            ? "bg-green-600/20 border-green-500 text-green-400"
+                            : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                        }`}
+                      >
+                        👕👟 {t("itemTypeSet")}
+                      </button>
+                    )}
+                    {availableItemTypes.includes("shirt") && (
+                      <button
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, itemType: "shirt" }))}
+                        className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${
+                          form.itemType === "shirt"
+                            ? "bg-green-600/20 border-green-500 text-green-400"
+                            : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                        }`}
+                      >
+                        👕 {t("itemTypeShirt")}
+                      </button>
+                    )}
+                    {availableItemTypes.includes("shorts") && (
+                      <button
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, itemType: "shorts" }))}
+                        className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${
+                          form.itemType === "shorts"
+                            ? "bg-green-600/20 border-green-500 text-green-400"
+                            : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                        }`}
+                      >
+                        👟 {t("itemTypeShorts")}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-300 text-sm mb-1">{t("jerseyNumber")}</label>
@@ -261,6 +415,15 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   </select>
                 </div>
               </div>
+              {/* Price Summary */}
+              {hasPrice && (
+                <div className="p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+                  <div className="flex justify-between text-lg font-bold text-green-400">
+                    <span>{t("totalPriceLabel")}</span>
+                    <span>{formatRupiah(getCalculatedPrice())}</span>
+                  </div>
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={loading || !form.number}
@@ -286,8 +449,11 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   <span className="w-10 h-10 flex items-center justify-center bg-green-600 text-white rounded font-mono font-bold">{r.number}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium">{r.name}</p>
-                    <p className="text-gray-500 text-xs">{t("size")}: {r.size}</p>
+                    <p className="text-gray-500 text-xs">{t("size")}: {r.size}{r.itemType && r.itemType !== "set" ? ` · ${r.itemType === "shirt" ? t("itemTypeShirt") : t("itemTypeShorts")}` : ""}</p>
                   </div>
+                  {hasPrice && r.totalPrice > 0 && (
+                    <span className="text-green-400 text-sm font-semibold whitespace-nowrap">{formatRupiah(r.totalPrice)}</span>
+                  )}
                   <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                     r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"
                   }`}>

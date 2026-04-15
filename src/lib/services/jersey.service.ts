@@ -29,13 +29,17 @@ export class JerseyService implements IJerseyService {
     return this.launchRepo.findBySlug(slug);
   }
 
-  async create(data: { title: string; designUrls?: string[] }): Promise<JerseyLaunch> {
+  async create(data: { title: string; designUrls?: string[]; basePrice?: number; shirtOnlyPrice?: number | null; shortsOnlyPrice?: number | null; sizeSurcharges?: string }): Promise<JerseyLaunch> {
     const slug = uuidv4().slice(0, 8);
     return this.launchRepo.create({
       title: data.title,
       designUrls: data.designUrls ?? [],
       slug,
       status: "open",
+      basePrice: data.basePrice ?? 0,
+      shirtOnlyPrice: data.shirtOnlyPrice ?? null,
+      shortsOnlyPrice: data.shortsOnlyPrice ?? null,
+      sizeSurcharges: data.sizeSurcharges ?? "{}",
     });
   }
 
@@ -49,7 +53,7 @@ export class JerseyService implements IJerseyService {
 
   async register(
     launchId: string,
-    data: { registrantName?: string; name: string; phone: string; number: number; size: string; jerseyType: string }
+    data: { registrantName?: string; name: string; phone: string; number: number; size: string; jerseyType: string; itemType?: string }
   ): Promise<JerseyRegistration> {
     if (data.number < 1 || data.number > 99) {
       throw new Error("Number must be between 1 and 99");
@@ -64,6 +68,23 @@ export class JerseyService implements IJerseyService {
       throw new Error(`Number ${data.number} is already taken`);
     }
 
+    const itemType = data.itemType || "set";
+    let totalPrice = launch.basePrice || 0;
+    try {
+      const surchargeList = JSON.parse(launch.sizeSurcharges || "[]");
+      if (Array.isArray(surchargeList)) {
+        // Find exact match: same size + same itemType
+        const exact = surchargeList.find((p: { size: string; itemType?: string; surcharge?: number; price?: number }) => p.size === data.size && (p.itemType || "set") === itemType);
+        if (exact) {
+          totalPrice += (exact.surcharge ?? exact.price ?? 0);
+        } else {
+          // Fallback: match by size only
+          const bySize = surchargeList.find((p: { size: string; surcharge?: number; price?: number }) => p.size === data.size);
+          if (bySize) totalPrice += (bySize.surcharge ?? bySize.price ?? 0);
+        }
+      }
+    } catch { /* ignore parse errors, use basePrice */ }
+
     return this.registrationRepo.create({
       jerseyLaunchId: launchId,
       registrantName: data.registrantName || "",
@@ -72,6 +93,8 @@ export class JerseyService implements IJerseyService {
       number: data.number,
       size: data.size,
       jerseyType: data.jerseyType || "player",
+      itemType,
+      totalPrice,
     });
   }
 

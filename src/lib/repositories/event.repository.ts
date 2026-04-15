@@ -64,7 +64,7 @@ export class EventRegistrationRepository implements IEventRegistrationRepository
 
   async countByEventIdAndPosition(eventId: string, position: string): Promise<number> {
     return prisma.eventRegistration.count({
-      where: { eventId, status: "confirmed", position },
+      where: { eventId, position, status: { in: ["registered", "confirmed"] } },
     });
   }
 }

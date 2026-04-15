@@ -53,7 +53,7 @@ export interface IEventService {
   }): Promise<Event>;
   update(id: string, data: Partial<Event>): Promise<Event>;
   delete(id: string): Promise<void>;
-  register(eventId: string, data: { name: string; phone: string; position: string }): Promise<{ registration: EventRegistration; status: "registered" }>;
+  register(eventId: string, data: { name: string; phone: string; position: string }): Promise<{ registration: EventRegistration; status: "registered" | "waiting" }>;
   updateRegistration(id: string, data: { status?: string; position?: string }): Promise<EventRegistration>;
   removeRegistration(id: string): Promise<void>;
 }
@@ -63,10 +63,10 @@ export interface IJerseyService {
   getOpen(): Promise<JerseyLaunchWithRegistrations[]>;
   getById(id: string): Promise<JerseyLaunchWithRegistrations | null>;
   getBySlug(slug: string): Promise<JerseyLaunchWithRegistrations | null>;
-  create(data: { title: string; designUrls?: string[] }): Promise<JerseyLaunch>;
+  create(data: { title: string; designUrls?: string[]; basePrice?: number; shirtOnlyPrice?: number | null; shortsOnlyPrice?: number | null; sizeSurcharges?: string }): Promise<JerseyLaunch>;
   update(id: string, data: Partial<JerseyLaunch>): Promise<JerseyLaunch>;
   delete(id: string): Promise<void>;
-  register(launchId: string, data: { name: string; phone: string; number: number; size: string }): Promise<JerseyRegistration>;
+  register(launchId: string, data: { name: string; phone: string; number: number; size: string; jerseyType?: string; itemType?: string }): Promise<JerseyRegistration>;
   getTakenNumbers(launchId: string): Promise<number[]>;
   removeRegistration(id: string): Promise<void>;
 }
