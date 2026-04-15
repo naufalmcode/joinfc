@@ -459,7 +459,12 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                     value={form.size}
                     onChange={(e) => {
                       const newSize = e.target.value;
-                      setForm((f) => ({ ...f, size: newSize, shirtSize: f.shirtSize === newSize ? "" : f.shirtSize }));
+                      const newSizeIdx = SIZES.indexOf(newSize);
+                      setForm((f) => {
+                        const shirtIdx = SIZES.indexOf(f.shirtSize);
+                        const shirtStillValid = f.shirtSize && shirtIdx > newSizeIdx;
+                        return { ...f, size: newSize, shirtSize: shirtStillValid ? f.shirtSize : "" };
+                      });
                     }}
                     className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none"
                   >
@@ -469,7 +474,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   </select>
                 </div>
               </div>
-              {hasPrice && form.itemType === "set" && availableCustomShirtSizes.length > 0 && (
+              {hasPrice && form.itemType === "set" && availableCustomShirtSizes.filter((s) => SIZES.indexOf(s) > SIZES.indexOf(form.size)).length > 0 && (
                 <div>
                   <label className="block text-gray-300 text-sm mb-1">{t("customShirtSizeLabel")}</label>
                   <select
@@ -478,8 +483,10 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                     className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none"
                   >
                     <option value="">{`${t("sameAsMainSize")} (${form.size})`}</option>
-                    {availableCustomShirtSizes.map((size) => (
-                      <option key={size} value={size}>{size}</option>
+                    {availableCustomShirtSizes
+                      .filter((size) => SIZES.indexOf(size) > SIZES.indexOf(form.size))
+                      .map((size) => (
+                        <option key={size} value={size}>{size}</option>
                     ))}
                   </select>
                   <p className="text-gray-500 text-xs mt-1">{t("customShirtSizeHint")}</p>
