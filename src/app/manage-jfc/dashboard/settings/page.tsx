@@ -70,11 +70,18 @@ export default function SettingsPage() {
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
-    if (data.success) {
-      setSettings((s) => ({ ...s, [field]: data.data.url }));
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.success) {
+        setSettings((s) => ({ ...s, [field]: data.data.url }));
+      } else {
+        alert("Upload gagal: " + (data.error || "Unknown error"));
+      }
+    } catch {
+      alert("Gagal upload gambar. Pastikan server berjalan.");
     }
+    e.target.value = "";
   }
 
   return (

@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateAdminSession } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/api-utils";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { v4 as uuidv4 } from "uuid";
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+import { put } from "@vercel/blob";
 
 export async function POST(request: NextRequest) {
   const isAdmin = await validateAdminSession();
@@ -30,10 +27,10 @@ export async function POST(request: NextRequest) {
   const sanitizedExt = ext.replace(/[^a-zA-Z0-9]/g, "").slice(0, 5);
   const filename = `${uuidv4()}.${sanitizedExt}`;
 
-  await mkdir(UPLOAD_DIR, { recursive: true });
+  const blob = await put(filename, file, {
+    access: "public",
+    addRandomSuffix: false,
+  });
 
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  await writeFile(path.join(UPLOAD_DIR, filename), bytes);
-
-  return successResponse({ url: `/uploads/${filename}` }, 201);
+  return successResponse({ url: blob.url }, 201);
 }
