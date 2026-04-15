@@ -4,12 +4,20 @@ import type {
   IJerseyLaunchRepository,
   IJerseyRegistrationRepository,
   JerseyLaunchWithRegistrations,
+  JerseyLaunchSummary,
 } from "@/lib/interfaces/repository.interfaces";
 
 export class JerseyLaunchRepository implements IJerseyLaunchRepository {
   async findAll(): Promise<JerseyLaunchWithRegistrations[]> {
     return prisma.jerseyLaunch.findMany({
       include: { registrations: { orderBy: { number: "asc" } } },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async findAllSummary(): Promise<JerseyLaunchSummary[]> {
+    return prisma.jerseyLaunch.findMany({
+      include: { _count: { select: { registrations: true } } },
       orderBy: { createdAt: "desc" },
     });
   }

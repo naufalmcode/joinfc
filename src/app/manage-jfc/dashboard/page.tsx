@@ -11,21 +11,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const [eventsRes, jerseysRes, highlightsRes] = await Promise.all([
-        fetch("/api/events"),
-        fetch("/api/jerseys"),
-        fetch("/api/highlights"),
-      ]);
-      const [events, jerseys, highlights] = await Promise.all([
-        eventsRes.json(),
-        jerseysRes.json(),
-        highlightsRes.json(),
-      ]);
-      setStats({
-        events: events.data?.length || 0,
-        jerseys: jerseys.data?.length || 0,
-        highlights: highlights.data?.length || 0,
-      });
+      const res = await fetch("/api/dashboard/stats");
+      const data = await res.json();
+      if (data.data) {
+        setStats(data.data);
+      }
     }
     load();
   }, []);

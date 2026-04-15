@@ -4,12 +4,20 @@ import type {
   IEventRepository,
   IEventRegistrationRepository,
   EventWithRegistrations,
+  EventSummary,
 } from "@/lib/interfaces/repository.interfaces";
 
 export class EventRepository implements IEventRepository {
   async findAll(): Promise<EventWithRegistrations[]> {
     return prisma.event.findMany({
       include: { registrations: { orderBy: { createdAt: "asc" } } },
+      orderBy: { eventDate: "desc" },
+    });
+  }
+
+  async findAllSummary(): Promise<EventSummary[]> {
+    return prisma.event.findMany({
+      include: { _count: { select: { registrations: true } } },
       orderBy: { eventDate: "desc" },
     });
   }

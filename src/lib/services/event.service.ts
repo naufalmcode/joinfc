@@ -1,6 +1,6 @@
 import type { Event, EventRegistration } from "@prisma/client";
 import type { IEventService } from "@/lib/interfaces/service.interfaces";
-import type { IEventRepository, IEventRegistrationRepository, EventWithRegistrations } from "@/lib/interfaces/repository.interfaces";
+import type { IEventRepository, IEventRegistrationRepository, EventWithRegistrations, EventSummary } from "@/lib/interfaces/repository.interfaces";
 
 export class EventService implements IEventService {
   constructor(
@@ -10,6 +10,10 @@ export class EventService implements IEventService {
 
   async getAll(): Promise<EventWithRegistrations[]> {
     return this.eventRepo.findAll();
+  }
+
+  async getAllSummary(): Promise<EventSummary[]> {
+    return this.eventRepo.findAllSummary();
   }
 
   async getOpen(): Promise<EventWithRegistrations[]> {
@@ -61,7 +65,10 @@ export class EventService implements IEventService {
 
     const position = data.position === "goalkeeper" ? "goalkeeper" : "player";
 
-    const currentCount = await this.registrationRepo.countByEventIdAndPosition(eventId, position);
+    // Use already-loaded registrations instead of a separate count query
+    const currentCount = event.registrations.filter(
+      (r) => r.position === position && (r.status === "registered" || r.status === "confirmed")
+    ).length;
     const maxSlots = position === "goalkeeper" ? event.maxGoalkeepers : event.maxPlayers;
     const status = currentCount >= maxSlots ? "waiting" : "registered";
 

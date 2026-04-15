@@ -42,9 +42,11 @@ export interface ICalendarRepository {
 
 // ─── Events ──────────────────────────────────────────────────────
 export type EventWithRegistrations = Event & { registrations: EventRegistration[] };
+export type EventSummary = Event & { _count: { registrations: number } };
 
 export interface IEventRepository {
   findAll(): Promise<EventWithRegistrations[]>;
+  findAllSummary(): Promise<EventSummary[]>;
   findOpen(): Promise<EventWithRegistrations[]>;
   findById(id: string): Promise<EventWithRegistrations | null>;
   create(data: Omit<Event, "id" | "createdAt" | "updatedAt">): Promise<Event>;
@@ -62,9 +64,11 @@ export interface IEventRegistrationRepository {
 
 // ─── Jersey ──────────────────────────────────────────────────────
 export type JerseyLaunchWithRegistrations = JerseyLaunch & { registrations: JerseyRegistration[] };
+export type JerseyLaunchSummary = JerseyLaunch & { _count: { registrations: number } };
 
 export interface IJerseyLaunchRepository {
   findAll(): Promise<JerseyLaunchWithRegistrations[]>;
+  findAllSummary(): Promise<JerseyLaunchSummary[]>;
   findOpen(): Promise<JerseyLaunchWithRegistrations[]>;
   findById(id: string): Promise<JerseyLaunchWithRegistrations | null>;
   findBySlug(slug: string): Promise<JerseyLaunchWithRegistrations | null>;

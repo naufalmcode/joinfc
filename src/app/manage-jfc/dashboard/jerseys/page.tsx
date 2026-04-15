@@ -31,7 +31,8 @@ interface JerseyItem {
   shirtOnlyPrice: number | null;
   shortsOnlyPrice: number | null;
   sizeSurcharges: string;
-  registrations: JerseyReg[];
+  _count?: { registrations: number };
+  registrations?: JerseyReg[];
 }
 
 const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
@@ -59,7 +60,8 @@ export default function JerseysPage() {
   const [form, setForm] = useState({ title: "", designUrls: [] as string[], basePrice: 0, surchargeList: [] as BaseSurchargeRule[], shirtSizeSurchargeList: [] as ShirtSizeSurchargeRule[] });
   const [editing, setEditing] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [viewJersey, setViewJersey] = useState<JerseyItem | null>(null);
+  const [viewJersey, setViewJersey] = useState<string | null>(null);
+  const [viewRegistrations, setViewRegistrations] = useState<Record<string, JerseyReg[]>>({});
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [pendingImages, setPendingImages] = useState<{ file: File; previewUrl: string }[]>([]);
   const pendingImagesRef = useRef<{ file: File; previewUrl: string }[]>([]);
@@ -76,9 +78,27 @@ export default function JerseysPage() {
   }, []);
 
   async function loadData() {
-    const res = await fetch("/api/jerseys");
+    const res = await fetch("/api/jerseys?summary=1");
     const data = await res.json();
     if (data.data) setJerseys(data.data);
+  }
+
+  async function loadRegistrations(jerseyId: string) {
+    if (viewRegistrations[jerseyId]) return; // already cached
+    const res = await fetch(`/api/jerseys/${jerseyId}`);
+    const data = await res.json();
+    if (data.data?.registrations) {
+      setViewRegistrations((prev) => ({ ...prev, [jerseyId]: data.data.registrations }));
+    }
+  }
+
+  async function toggleView(jerseyId: string) {
+    if (viewJersey === jerseyId) {
+      setViewJersey(null);
+    } else {
+      setViewJersey(jerseyId);
+      loadRegistrations(jerseyId);
+    }
   }
 
   useEffect(() => { loadData(); }, []);
@@ -344,7 +364,7 @@ export default function JerseysPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-400 text-sm mt-1">{t("registrantsCount")}: {j.registrations.length}</p>
+                  <p className="text-gray-400 text-sm mt-1">{t("registrantsCount")}: {j._count?.registrations ?? j.registrations?.length ?? 0}</p>
                   {j.basePrice > 0 && <p className="text-green-400 text-sm mt-1">{t("priceLabel")}: {formatRupiah(j.basePrice)}</p>}
                   <p className="text-blue-400 text-sm mt-1">
                     Link: <code className="bg-gray-700 px-2 py-0.5 rounded">/jersey/{j.slug}</code>
@@ -352,8 +372,8 @@ export default function JerseysPage() {
                 </div>
               </div>
               <div className="flex gap-2 flex-shrink-0 flex-wrap">
-                <button onClick={() => setViewJersey(viewJersey?.id === j.id ? null : j)}
-                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewJersey?.id === j.id ? t("closeView") : t("viewDetail")}</button>
+                <button onClick={() => toggleView(j.id)}
+                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewJersey === j.id ? t("closeView") : t("viewDetail")}</button>
                 <button onClick={() => downloadReport(`/api/reports?type=jersey&id=${j.id}`)}
                   className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition">📥 Report</button>
                 <button onClick={() => toggleStatus(j)}
@@ -387,10 +407,12 @@ export default function JerseysPage() {
               </div>
             </div>
 
-            {viewJersey?.id === j.id && (
+            {viewJersey === j.id && (
               <div className="mt-4 border-t border-gray-700 pt-4">
                 <h4 className="text-white font-semibold mb-2">{t("registrantList")}</h4>
-                {j.registrations.length === 0 ? (
+                {!viewRegistrations[j.id] ? (
+                  <p className="text-gray-400 text-sm">{t("loading")}</p>
+                ) : viewRegistrations[j.id].length === 0 ? (
                   <p className="text-gray-500 text-sm">{t("noRegistrantsYet")}</p>
                 ) : (
                   <div className="overflow-x-auto -mx-6 px-6">
@@ -399,7 +421,7 @@ export default function JerseysPage() {
                       <th className="py-1">#</th><th>{t("registrantCol")}</th><th>{t("jerseyName2")}</th><th>{t("phoneCol")}</th><th>{t("numberCol")}</th><th>{t("sizeCol")}</th><th>{t("shirtSizeCol")}</th><th>{t("typeCol")}</th><th>{t("itemCol")}</th><th>{t("priceCol")}</th>
                     </tr></thead>
                     <tbody>
-                      {j.registrations.map((r, i) => (
+                      {viewRegistrations[j.id].map((r, i) => (
                         <tr key={r.id} className="text-gray-300 border-t border-gray-700">
                           <td className="py-1">{i + 1}</td>
                           <td>{r.registrantName || "-"}</td>

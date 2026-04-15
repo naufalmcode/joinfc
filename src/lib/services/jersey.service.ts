@@ -4,6 +4,7 @@ import type {
   IJerseyLaunchRepository,
   IJerseyRegistrationRepository,
   JerseyLaunchWithRegistrations,
+  JerseyLaunchSummary,
 } from "@/lib/interfaces/repository.interfaces";
 import { v4 as uuidv4 } from "uuid";
 
@@ -15,6 +16,10 @@ export class JerseyService implements IJerseyService {
 
   async getAll(): Promise<JerseyLaunchWithRegistrations[]> {
     return this.launchRepo.findAll();
+  }
+
+  async getAllSummary(): Promise<JerseyLaunchSummary[]> {
+    return this.launchRepo.findAllSummary();
   }
 
   async getOpen(): Promise<JerseyLaunchWithRegistrations[]> {
@@ -63,8 +68,8 @@ export class JerseyService implements IJerseyService {
     if (!launch) throw new Error("Jersey launch not found");
     if (launch.status !== "open") throw new Error("Jersey launch is closed");
 
-    const takenNumbers = await this.registrationRepo.findTakenNumbers(launchId);
-    if (takenNumbers.includes(data.number)) {
+    // Use already-loaded registrations instead of a separate DB query
+    if (launch.registrations.some((r) => r.number === data.number)) {
       throw new Error(`Number ${data.number} is already taken`);
     }
 

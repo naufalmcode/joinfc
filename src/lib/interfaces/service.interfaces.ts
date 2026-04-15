@@ -13,7 +13,7 @@ import type {
   Vote,
   VoteResponse,
 } from "@prisma/client";
-import type { EventWithRegistrations, JerseyLaunchWithRegistrations, VoteWithOptions } from "./repository.interfaces";
+import type { EventWithRegistrations, EventSummary, JerseyLaunchWithRegistrations, JerseyLaunchSummary, VoteWithOptions } from "./repository.interfaces";
 
 export interface ISiteSettingsService {
   getSettings(): Promise<SiteSettings>;
@@ -39,6 +39,7 @@ export interface ICalendarService {
 
 export interface IEventService {
   getAll(): Promise<EventWithRegistrations[]>;
+  getAllSummary(): Promise<EventSummary[]>;
   getOpen(): Promise<EventWithRegistrations[]>;
   getById(id: string): Promise<EventWithRegistrations | null>;
   create(data: {
@@ -60,6 +61,7 @@ export interface IEventService {
 
 export interface IJerseyService {
   getAll(): Promise<JerseyLaunchWithRegistrations[]>;
+  getAllSummary(): Promise<JerseyLaunchSummary[]>;
   getOpen(): Promise<JerseyLaunchWithRegistrations[]>;
   getById(id: string): Promise<JerseyLaunchWithRegistrations | null>;
   getBySlug(slug: string): Promise<JerseyLaunchWithRegistrations | null>;
