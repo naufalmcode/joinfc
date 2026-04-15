@@ -103,6 +103,7 @@ model JerseyRegistration {
   phone          String
   number         Int
   size           String       @default("L")
+  jerseyType     String       @default("player")
   createdAt      DateTime     @default(now())
   jerseyLaunch   JerseyLaunch @relation(fields: [jerseyLaunchId], references: [id], onDelete: Cascade)
 
@@ -114,7 +115,7 @@ model News {
   id        String   @id @default(uuid())
   title     String
   content   String
-  imageUrl  String?
+  imageUrls String[]
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

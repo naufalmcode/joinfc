@@ -71,7 +71,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <p className="text-white text-xl mb-4">Vote tidak ditemukan</p>
-          <Link href="/" className="text-sm underline" style={{ color: primary }}>← {t("backToHome")}</Link>
+          <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:opacity-90" style={{ backgroundColor: primary }}>{t("backToHome")}</Link>
         </div>
       </div>
     );
@@ -96,8 +96,8 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <Link href="/" className="text-sm mb-6 inline-block" style={{ color: primary }}>
-          ← {t("backToHome")}
+        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-lg text-sm font-medium text-white transition hover:opacity-90" style={{ backgroundColor: primary }}>
+          {t("backToHome")}
         </Link>
 
         <h1 className="text-3xl font-bold mb-2">{vote.title}</h1>

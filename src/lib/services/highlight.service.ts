@@ -13,6 +13,10 @@ export class HighlightService implements IHighlightService {
     return this.repository.findActive();
   }
 
+  async getById(id: string): Promise<Highlight | null> {
+    return this.repository.findById(id);
+  }
+
   async create(data: { title: string; description?: string; imageUrl?: string; sortOrder?: number }): Promise<Highlight> {
     return this.repository.create({
       title: data.title,

@@ -71,7 +71,8 @@ Mengatur konfigurasi website:
 - **Sosial Media** — Link Instagram dan WhatsApp
 - **Background Header** — Pilih gradient warna atau gambar upload
 - **Warna Tema** — Primary, Secondary, Accent (berlaku di semua halaman termasuk admin)
-- **Ubah Password** — Ganti password admin (disimpan di database tabel `site_settings`)
+
+> **Ubah Password:** Klik link **"🔒 Ubah Password Admin →"** di bawah form pengaturan, akan diarahkan ke halaman khusus ubah password.
 
 > **Penting:** Password admin disimpan di tabel `site_settings` kolom `adminPassword`. Default: `admjoinfc2020`. Untuk mengubah langsung di database, update kolom `admin_password` pada baris `id = 'default'`.
 
@@ -93,23 +94,19 @@ Mengelola berita dan artikel:
 Mengelola open events (main bareng):
 - **Buat Event Baru** — Isi judul, lokasi, link Google Maps, tanggal, rekening, maks pemain, maks kiper
 - **Lihat Peserta** — Klik "Lihat" pada event untuk melihat daftar pendaftar (nama, telepon, posisi, status)
+- **Download Report** — Klik "📥 Report" pada setiap event untuk download Excel, atau klik "📥 Download Semua Event" di atas untuk semua event
 - **Toggle Open/Close** — Buka/tutup pendaftaran event
 - **Edit/Hapus** — Ubah atau hapus event
 
 #### 👕 Jersey
 Mengelola jersey launch:
 - **Launch Jersey Baru** — Isi nama dan upload desain
-- **Lihat Peserta** — Klik "Lihat" untuk melihat daftar pemesanan (pendaftar, nama jersey, telepon, nomor, ukuran)
+- **Lihat Peserta** — Klik "Lihat" untuk melihat daftar pemesanan (pendaftar, nama jersey, telepon, nomor, ukuran, tipe)
+- **Download Report** — Klik "📥 Report" pada setiap jersey untuk download Excel
 - **Toggle Open/Close** — Buka/tutup pemesanan
 - **Link Share** — Salin link `/jersey/[slug]` untuk dibagikan
 
-#### 📊 Reports
-Download data ke Excel:
-- **Download Semua Event** — Semua event dalam 1 file Excel (1 sheet per event)
-- **Download Per Event** — Pilih event spesifik
-- **Download Per Jersey** — Pilih jersey launch spesifik
-
-Data yang diexport meliputi: Nama, Telepon, Posisi (untuk event), Status, Tanggal Daftar.
+> **Catatan:** Menu Reports tidak lagi terpisah di sidebar. Fitur download report sudah terintegrasi langsung di halaman Events dan Jersey masing-masing.
 
 ### Logout
 Klik tombol **"Logout"** di bagian bawah sidebar.

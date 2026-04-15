@@ -9,6 +9,7 @@ interface JerseyReg {
   name: string;
   number: number;
   size: string;
+  jerseyType: string;
 }
 
 interface JerseyDetail {
@@ -20,19 +21,20 @@ interface JerseyDetail {
   registrations: JerseyReg[];
 }
 
-const SIZES = ["S", "M", "L", "XL", "XXL"];
+const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
 
 export default function JerseyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { t } = useI18n();
   const [jersey, setJersey] = useState<JerseyDetail | null>(null);
-  const [form, setForm] = useState({ registrantName: "", name: "", phone: "", number: 0, size: "L" });
+  const [form, setForm] = useState({ registrantName: "", name: "", phone: "", number: 0, size: "L", jerseyType: "player" });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [takenMap, setTakenMap] = useState<Record<number, string>>({});
   const [notFound, setNotFound] = useState(false);
   const [tappedNum, setTappedNum] = useState<number | null>(null);
+  const [settings, setSettings] = useState<{ primaryColor: string } | null>(null);
 
   async function loadJersey() {
     const res = await fetch(`/api/jerseys/slug/${slug}`);
@@ -47,7 +49,14 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
     }
   }
 
-  useEffect(() => { loadJersey(); }, [slug]);
+  useEffect(() => {
+    loadJersey();
+    fetch("/api/settings").then((r) => r.json()).then((d) => {
+      if (d.data) setSettings({ primaryColor: d.data.primaryColor });
+    });
+  }, [slug]);
+
+  const primary = settings?.primaryColor || "#16a34a";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -68,7 +77,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
 
     if (data.success) {
       setResult(`Jersey #${form.number} (${form.size}) — ${form.name} ✓`);
-      setForm({ registrantName: "", name: "", phone: "", number: 0, size: "L" });
+      setForm({ registrantName: "", name: "", phone: "", number: 0, size: "L", jerseyType: "player" });
       loadJersey();
     } else {
       setError(data.error || "Failed");
@@ -81,7 +90,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <p className="text-white text-xl mb-4">{t("jerseyNotFound")}</p>
-          <Link href="/" className="text-green-400 hover:text-green-300">{t("backToHome")}</Link>
+          <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:opacity-90" style={{ backgroundColor: primary }}>{t("backToHome")}</Link>
         </div>
       </div>
     );
@@ -104,7 +113,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-12">
-        <Link href="/" className="text-green-400 hover:text-green-300 text-sm mb-8 inline-block">{t("backToHome")}</Link>
+        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-lg text-sm font-medium text-white transition hover:opacity-90" style={{ backgroundColor: primary }}>{t("backToHome")}</Link>
 
         <div className="bg-gray-800 rounded-xl overflow-hidden">
           {(jersey.designUrls || []).length > 0 && (
@@ -198,6 +207,33 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   required
                 />
               </div>
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">{t("jerseyTypeLabel")}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, jerseyType: "player" }))}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 font-semibold transition ${
+                      form.jerseyType === "player"
+                        ? "bg-green-600/20 border-green-500 text-green-400"
+                        : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                    }`}
+                  >
+                    ⚽ {t("jerseyPlayer")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, jerseyType: "goalkeeper" }))}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 font-semibold transition ${
+                      form.jerseyType === "goalkeeper"
+                        ? "bg-blue-600/20 border-blue-500 text-blue-400"
+                        : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                    }`}
+                  >
+                    🧤 {t("jerseyGoalkeeper")}
+                  </button>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-300 text-sm mb-1">{t("jerseyNumber")}</label>
@@ -248,10 +284,15 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
               {jersey.registrations.map((r) => (
                 <div key={r.id} className="flex items-center gap-3 p-2 bg-gray-700 rounded">
                   <span className="w-10 h-10 flex items-center justify-center bg-green-600 text-white rounded font-mono font-bold">{r.number}</span>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium">{r.name}</p>
                     <p className="text-gray-500 text-xs">{t("size")}: {r.size}</p>
                   </div>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"
+                  }`}>
+                    {r.jerseyType === "goalkeeper" ? "🧤 " + t("jerseyGoalkeeper") : "⚽ " + t("jerseyPlayer")}
+                  </span>
                 </div>
               ))}
             </div>

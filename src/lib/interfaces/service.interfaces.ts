@@ -23,6 +23,7 @@ export interface ISiteSettingsService {
 export interface IHighlightService {
   getAll(): Promise<Highlight[]>;
   getActive(): Promise<Highlight[]>;
+  getById(id: string): Promise<Highlight | null>;
   create(data: { title: string; description?: string; imageUrl?: string; sortOrder?: number }): Promise<Highlight>;
   update(id: string, data: Partial<Highlight>): Promise<Highlight>;
   delete(id: string): Promise<void>;
@@ -79,7 +80,7 @@ export interface IReportService {
 export interface INewsService {
   getAll(): Promise<News[]>;
   getActive(): Promise<News[]>;
-  create(data: { title: string; content: string; imageUrl?: string }): Promise<News>;
+  create(data: { title: string; content: string; imageUrls?: string[] }): Promise<News>;
   update(id: string, data: Partial<News>): Promise<News>;
   delete(id: string): Promise<void>;
 }

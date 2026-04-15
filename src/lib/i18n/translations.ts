@@ -4,7 +4,7 @@ export const translations = {
   id: {
     // Common
     loading: "Memuat...",
-    backToHome: "← Kembali ke beranda",
+    backToHome: "Kembali ke beranda",
     register: "Daftar",
     close: "Tutup",
     save: "Simpan",
@@ -72,6 +72,9 @@ export const translations = {
     registered: "Sudah Terdaftar",
     jerseyClosedMsg: "Pendaftaran jersey ini sudah ditutup.",
     jerseyNotFound: "Jersey launch tidak ditemukan",
+    jerseyTypeLabel: "Tipe Jersey",
+    jerseyPlayer: "Jersey Pemain",
+    jerseyGoalkeeper: "Jersey Kiper",
 
     // Admin
     dashboard: "Dashboard",
@@ -179,7 +182,7 @@ export const translations = {
   },
   en: {
     loading: "Loading...",
-    backToHome: "← Back to home",
+    backToHome: "Back to home",
     register: "Register",
     close: "Close",
     save: "Save",
@@ -244,6 +247,9 @@ export const translations = {
     registered: "Registered",
     jerseyClosedMsg: "Registration for this jersey is closed.",
     jerseyNotFound: "Jersey launch not found",
+    jerseyTypeLabel: "Jersey Type",
+    jerseyPlayer: "Player Jersey",
+    jerseyGoalkeeper: "Goalkeeper Jersey",
 
     dashboard: "Dashboard",
     settings: "Settings",

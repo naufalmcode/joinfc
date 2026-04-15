@@ -49,7 +49,7 @@ export class JerseyService implements IJerseyService {
 
   async register(
     launchId: string,
-    data: { registrantName?: string; name: string; phone: string; number: number; size: string }
+    data: { registrantName?: string; name: string; phone: string; number: number; size: string; jerseyType: string }
   ): Promise<JerseyRegistration> {
     if (data.number < 1 || data.number > 99) {
       throw new Error("Number must be between 1 and 99");
@@ -71,6 +71,7 @@ export class JerseyService implements IJerseyService {
       phone: data.phone,
       number: data.number,
       size: data.size,
+      jerseyType: data.jerseyType || "player",
     });
   }
 

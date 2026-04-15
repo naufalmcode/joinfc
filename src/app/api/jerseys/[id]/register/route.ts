@@ -19,6 +19,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       phone: body.phone,
       number: Number(body.number),
       size: body.size || "L",
+      jerseyType: body.jerseyType || "player",
     });
     return successResponse(reg, 201);
   } catch (err: unknown) {

@@ -5,6 +5,13 @@ import { successResponse, errorResponse } from "@/lib/api-utils";
 
 type Params = { params: Promise<{ id: string }> };
 
+export async function GET(_request: NextRequest, { params }: Params) {
+  const { id } = await params;
+  const highlight = await highlightService.getById(id);
+  if (!highlight) return errorResponse("Not found", 404);
+  return successResponse(highlight);
+}
+
 export async function PUT(request: NextRequest, { params }: Params) {
   const isAdmin = await validateAdminSession();
   if (!isAdmin) return errorResponse("Unauthorized", 401);

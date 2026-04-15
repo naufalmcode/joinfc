@@ -14,7 +14,6 @@ const navItems = [
   { href: "/manage-jfc/dashboard/events", labelKey: "navEvents" as const, icon: "⚽" },
   { href: "/manage-jfc/dashboard/jerseys", labelKey: "navJersey" as const, icon: "👕" },
   { href: "/manage-jfc/dashboard/votes", labelKey: "navVotes" as const, icon: "🗳️" },
-  { href: "/manage-jfc/dashboard/reports", labelKey: "navReports" as const, icon: "📊" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
 import { useI18n } from "@/lib/i18n";
 import ConfirmModal from "@/components/ConfirmModal";
@@ -23,6 +23,7 @@ interface VoteItem {
 interface OptionForm {
   name: string;
   imageUrl: string;
+  pendingFile?: File | null;
 }
 
 export default function VotesPage() {
@@ -43,21 +44,15 @@ export default function VotesPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  async function handleOptionUpload(index: number, e: React.ChangeEvent<HTMLInputElement>) {
+  function handleOptionFileSelect(index: number, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (data.success) {
-        setOptions((prev) => prev.map((opt, i) => i === index ? { ...opt, imageUrl: data.data.url } : opt));
-      }
-    } catch {
-      alert("Gagal upload gambar. Pastikan server berjalan.");
-    }
+    setOptions((prev) => prev.map((opt, i) => i === index ? { ...opt, pendingFile: file } : opt));
     e.target.value = "";
+  }
+
+  function removeOptionImage(index: number) {
+    setOptions((prev) => prev.map((opt, i) => i === index ? { ...opt, imageUrl: "", pendingFile: null } : opt));
   }
 
   function addOption() {
@@ -72,21 +67,31 @@ export default function VotesPage() {
     setOptions((prev) => prev.map((opt, i) => i === index ? { ...opt, name } : opt));
   }
 
-  function removeOptionImage(index: number) {
-    setOptions((prev) => prev.map((opt, i) => i === index ? { ...opt, imageUrl: "" } : opt));
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
     setLoading(true);
-    const payload = {
-      title,
-      options: options.filter((o) => o.name.trim()).map((o) => ({
-        name: o.name,
-        imageUrl: o.imageUrl || undefined,
-      })),
-    };
+
+    // Upload pending files first
+    const resolvedOptions = await Promise.all(
+      options.filter((o) => o.name.trim()).map(async (o) => {
+        let imageUrl = o.imageUrl || undefined;
+        if (o.pendingFile) {
+          const formData = new FormData();
+          formData.append("file", o.pendingFile);
+          try {
+            const res = await fetch("/api/upload", { method: "POST", body: formData });
+            const data = await res.json();
+            if (data.success) imageUrl = data.data.url;
+          } catch {
+            alert("Gagal upload gambar.");
+          }
+        }
+        return { name: o.name, imageUrl };
+      })
+    );
+
+    const payload = { title, options: resolvedOptions };
 
     if (editing) {
       await fetch(`/api/votes/${editing}`, {
@@ -170,9 +175,9 @@ export default function VotesPage() {
                     placeholder={t("optionNamePlaceholder")}
                     className="w-full px-3 py-2 rounded bg-gray-600 text-white border border-gray-500 focus:outline-none"
                   />
-                  {opt.imageUrl ? (
+                  {(opt.imageUrl || opt.pendingFile) ? (
                     <div className="relative inline-block">
-                      <img src={opt.imageUrl} alt={opt.name} className="w-24 h-24 object-cover rounded" />
+                      <img src={opt.pendingFile ? URL.createObjectURL(opt.pendingFile) : opt.imageUrl} alt={opt.name} className={`w-24 h-24 object-cover rounded ${opt.pendingFile ? "border-2 border-dashed border-yellow-500" : ""}`} />
                       <button
                         type="button"
                         onClick={() => removeOptionImage(i)}
@@ -189,7 +194,7 @@ export default function VotesPage() {
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={(e) => handleOptionUpload(i, e)}
+                          onChange={(e) => handleOptionFileSelect(i, e)}
                           className="hidden"
                         />
                       </label>

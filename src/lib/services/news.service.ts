@@ -13,11 +13,11 @@ export class NewsService implements INewsService {
     return this.repository.findActive();
   }
 
-  async create(data: { title: string; content: string; imageUrl?: string }): Promise<News> {
+  async create(data: { title: string; content: string; imageUrls?: string[] }): Promise<News> {
     return this.repository.create({
       title: data.title,
       content: data.content,
-      imageUrl: data.imageUrl ?? null,
+      imageUrls: data.imageUrls ?? [],
       isActive: true,
     });
   }

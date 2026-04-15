@@ -35,6 +35,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   const dateLocale = locale === "id" ? idLocale : enUS;
 
   const [event, setEvent] = useState<EventDetail | null>(null);
+  const [settings, setSettings] = useState<{ primaryColor: string; accentColor: string } | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", position: "player" });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ status: string; message: string } | null>(null);
@@ -46,7 +47,15 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     if (data.data) setEvent(data.data);
   }
 
-  useEffect(() => { loadEvent(); }, [id]);
+  useEffect(() => {
+    loadEvent();
+    fetch("/api/settings").then((r) => r.json()).then((d) => {
+      if (d.data) setSettings({ primaryColor: d.data.primaryColor, accentColor: d.data.accentColor });
+    });
+  }, [id]);
+
+  const primary = settings?.primaryColor || "#16a34a";
+  const accent = settings?.accentColor || "#fbbf24";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -96,12 +105,12 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-12">
-        <Link href="/" className="text-green-400 hover:text-green-300 text-sm mb-8 inline-block">{t("backToHome")}</Link>
+        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-lg text-sm font-medium text-white transition hover:opacity-90" style={{ backgroundColor: primary }}>{t("backToHome")}</Link>
 
         <div className="bg-gray-800 rounded-xl p-6 md:p-8">
           <h1 className="text-3xl font-bold">{event.title}</h1>
           <div className="mt-4 space-y-2">
-            <p className="text-green-400">
+            <p style={{ color: accent }}>
               {format(new Date(event.eventDate), "EEEE, dd MMMM yyyy - HH:mm", { locale: dateLocale })}
             </p>
             <p className="text-gray-400">
@@ -241,7 +250,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
 
           {waitingGK.length > 0 && (
             <>
-              <h3 className="text-lg font-semibold mt-6 mb-3 text-yellow-400">{t("waitingList")} ({waitingGK.length})</h3>
+              <h3 className="text-lg font-semibold mt-6 mb-3 text-yellow-400">🧤 {t("waitingList")} {t("goalkeeper")} ({waitingGK.length})</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {waitingGK.map((r, i) => (
                   <div key={r.id} className="flex items-center gap-2 p-2 bg-gray-700 rounded">
@@ -272,7 +281,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
 
           {waitingPlayers.length > 0 && (
             <>
-              <h3 className="text-lg font-semibold mt-6 mb-3 text-yellow-400">{t("waitingList")} ({waitingPlayers.length})</h3>
+              <h3 className="text-lg font-semibold mt-6 mb-3 text-yellow-400">⚽ {t("waitingList")} {t("player")} ({waitingPlayers.length})</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {waitingPlayers.map((r, i) => (
                   <div key={r.id} className="flex items-center gap-2 p-2 bg-gray-700 rounded">

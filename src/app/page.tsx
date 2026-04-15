@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { enUS } from "date-fns/locale";
@@ -31,7 +31,7 @@ interface NewsItem {
   id: string;
   title: string;
   content: string;
-  imageUrl: string | null;
+  imageUrls: string[];
   createdAt: string;
 }
 
@@ -88,8 +88,14 @@ export default function HomePage() {
   const [jerseys, setJerseys] = useState<JerseyItem[]>([]);
   const [votes, setVotes] = useState<VoteItemPublic[]>([]);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
-  const [selectedHighlight, setSelectedHighlight] = useState<Highlight | null>(null);
   const [tappedDay, setTappedDay] = useState<number | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  function scrollCarousel(dir: "left" | "right") {
+    if (!carouselRef.current) return;
+    const amount = carouselRef.current.clientWidth * 0.7;
+    carouselRef.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
+  }
 
   useEffect(() => {
     Promise.all([
@@ -250,7 +256,7 @@ export default function HomePage() {
                       {monthEvents.map((ev) => (
                         <Link key={ev.id} href={`/event/${ev.id}`} className="block p-2 rounded-lg bg-gray-700/50 hover:bg-gray-700 transition">
                           <p className="text-xs font-semibold text-white truncate">{ev.title}</p>
-                          <p className="text-[10px] mt-0.5" style={{ color: primary }}>
+                          <p className="text-[10px] mt-0.5" style={{ color: accent }}>
                             {format(new Date(ev.eventDate), "dd MMM - HH:mm", { locale: dateLocale })}
                           </p>
                           <p className="text-[10px] text-gray-400 truncate">📍 {ev.location}</p>
@@ -282,11 +288,23 @@ export default function HomePage() {
             {highlights.length > 0 && (
               <div>
                 <h2 className="text-2xl font-bold mb-6" style={{ color: accent }}>{t("highlights")}</h2>
-                <div className="relative">
-                  <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-thin" style={{ scrollbarColor: `${primary} transparent` }}>
+                <div className="relative group/carousel">
+                  {/* Scroll Arrows */}
+                  <button
+                    onClick={() => scrollCarousel("left")}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition opacity-0 group-hover/carousel:opacity-100 -ml-2"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={() => scrollCarousel("right")}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition opacity-0 group-hover/carousel:opacity-100 -mr-2"
+                  >
+                    ›
+                  </button>
+                  <div ref={carouselRef} className="flex gap-3 overflow-x-auto pb-3 scrollbar-thin scroll-smooth snap-x snap-mandatory" style={{ scrollbarColor: `${primary} transparent` }}>
                     {highlights.map((h) => (
-                      <div key={h.id} className="flex-shrink-0 w-64 md:w-72 bg-gray-800 rounded-xl overflow-hidden group cursor-pointer"
-                        onClick={() => setSelectedHighlight(h)}>
+                      <Link key={h.id} href={`/highlight/${h.id}`} className="flex-shrink-0 w-64 md:w-72 bg-gray-800 rounded-xl overflow-hidden group snap-start">
                         {h.imageUrl && (
                           <div className="relative">
                             <img src={h.imageUrl} alt={h.title} className="w-full h-40 object-cover group-hover:scale-105 transition duration-300" />
@@ -295,7 +313,7 @@ export default function HomePage() {
                             </div>
                           </div>
                         )}
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -309,8 +327,8 @@ export default function HomePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {news.map((n) => (
                     <div key={n.id} className="bg-gray-800 rounded-xl overflow-hidden">
-                      {n.imageUrl && (
-                        <img src={n.imageUrl} alt={n.title} className="w-full h-40 object-cover" />
+                      {(n.imageUrls || []).length > 0 && (
+                        <img src={n.imageUrls[0]} alt={n.title} className="w-full h-40 object-cover" />
                       )}
                       <div className="p-4">
                         <p className="text-xs text-gray-500 mb-1">
@@ -340,7 +358,7 @@ export default function HomePage() {
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                           <div>
                             <h3 className="text-lg font-bold text-white">{ev.title}</h3>
-                            <p className="text-sm mt-1" style={{ color: primary }}>
+                            <p className="text-sm mt-1" style={{ color: accent }}>
                               {format(new Date(ev.eventDate), "EEEE, dd MMMM yyyy - HH:mm", { locale: dateLocale })}
                             </p>
                             <p className="text-gray-400 text-sm">
@@ -455,28 +473,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Highlight Detail Modal */}
-      {selectedHighlight && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          onClick={() => setSelectedHighlight(null)}>
-          <div className="bg-gray-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            {selectedHighlight.imageUrl && (
-              <img src={selectedHighlight.imageUrl} alt={selectedHighlight.title} className="w-full max-h-[60vh] object-cover" />
-            )}
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-white">{selectedHighlight.title}</h3>
-              {selectedHighlight.description && (
-                <p className="text-gray-400 mt-2 text-sm">{selectedHighlight.description}</p>
-              )}
-              <button onClick={() => setSelectedHighlight(null)}
-                className="mt-4 px-5 py-2 rounded-lg text-white text-sm font-medium transition hover:opacity-90"
-                style={{ backgroundColor: primary }}>
-                {t("close")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <footer className="py-8 border-t border-gray-800">

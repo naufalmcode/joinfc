@@ -138,9 +138,21 @@ export default function EventsPage() {
 
   const ic = "w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 admin-input";
 
+  function downloadReport(url: string) {
+    window.open(url, "_blank");
+  }
+
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8">Events</h1>
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+        <h1 className="text-3xl font-bold text-white">Events</h1>
+        <button
+          onClick={() => downloadReport("/api/reports?type=all-events")}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2"
+        >
+          📥 Download Semua Event
+        </button>
+      </div>
 
       <form onSubmit={handleSubmit} className="bg-gray-800 rounded-xl p-6 mb-8 space-y-4 max-w-2xl">
         <h2 className="text-lg font-semibold text-white">{editing ? "Edit Event" : "Buat Event Baru"}</h2>
@@ -230,6 +242,8 @@ export default function EventsPage() {
                 <div className="flex gap-2 flex-shrink-0 flex-wrap">
                   <button onClick={() => setViewEvent(viewEvent?.id === ev.id ? null : ev)}
                     className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewEvent?.id === ev.id ? "Tutup" : "Lihat"}</button>
+                  <button onClick={() => downloadReport(`/api/reports?type=event&id=${ev.id}`)}
+                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition">📥 Report</button>
                   <button onClick={() => toggleStatus(ev)}
                     className={`px-3 py-1 rounded text-sm text-white ${ev.status === "open" ? "bg-yellow-600" : ""}`}
                     style={ev.status !== "open" ? { backgroundColor: primary } : undefined}>

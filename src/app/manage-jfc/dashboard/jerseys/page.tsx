@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
 import ConfirmModal from "@/components/ConfirmModal";
 
@@ -11,6 +11,7 @@ interface JerseyReg {
   phone: string;
   number: number;
   size: string;
+  jerseyType: string;
   createdAt: string;
 }
 
@@ -31,6 +32,10 @@ export default function JerseysPage() {
   const [loading, setLoading] = useState(false);
   const [viewJersey, setViewJersey] = useState<JerseyItem | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+
+  const pendingPreviews = useMemo(() => pendingFiles.map((f) => URL.createObjectURL(f)), [pendingFiles]);
+  useEffect(() => { return () => { pendingPreviews.forEach(URL.revokeObjectURL); }; }, [pendingPreviews]);
 
   async function loadData() {
     const res = await fetch("/api/jerseys");
@@ -40,17 +45,15 @@ export default function JerseysPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    for (let i = 0; i < files.length; i++) {
-      const formData = new FormData();
-      formData.append("file", files[i]);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (data.success) setForm((f) => ({ ...f, designUrls: [...f.designUrls, data.data.url] }));
-    }
+    setPendingFiles((prev) => [...prev, ...Array.from(files)]);
     e.target.value = "";
+  }
+
+  function removePendingFile(index: number) {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
   function removeDesignUrl(index: number) {
@@ -61,21 +64,34 @@ export default function JerseysPage() {
     e.preventDefault();
     setLoading(true);
 
+    // Upload pending files first
+    const uploadedUrls: string[] = [];
+    for (const file of pendingFiles) {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.success) uploadedUrls.push(data.data.url);
+    }
+    const allUrls = [...form.designUrls, ...uploadedUrls];
+
+    const payload = { ...form, designUrls: allUrls };
     if (editing) {
       await fetch(`/api/jerseys/${editing}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
     } else {
       await fetch("/api/jerseys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
     }
 
     setForm({ title: "", designUrls: [] });
+    setPendingFiles([]);
     setEditing(null);
     setLoading(false);
     loadData();
@@ -97,6 +113,10 @@ export default function JerseysPage() {
     loadData();
   }
 
+  function downloadReport(url: string) {
+    window.open(url, "_blank");
+  }
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-white mb-8">Jersey Launch</h1>
@@ -111,14 +131,21 @@ export default function JerseysPage() {
           <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             Pilih File
-            <input type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" />
+            <input type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
           </label>
-          {form.designUrls.length > 0 && (
+          {(form.designUrls.length > 0 || pendingFiles.length > 0) && (
             <div className="mt-2 flex flex-wrap gap-2">
               {form.designUrls.map((url, idx) => (
-                <div key={idx} className="relative group">
+                <div key={`existing-${idx}`} className="relative group">
                   <img src={url} alt={`Design ${idx + 1}`} className="w-24 h-24 object-cover rounded" />
                   <button type="button" onClick={() => removeDesignUrl(idx)}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-80 group-hover:opacity-100 transition">✕</button>
+                </div>
+              ))}
+              {pendingPreviews.map((url, idx) => (
+                <div key={`pending-${idx}`} className="relative group">
+                  <img src={url} alt={`Pending ${idx + 1}`} className="w-24 h-24 object-cover rounded border-2 border-dashed border-yellow-500" />
+                  <button type="button" onClick={() => removePendingFile(idx)}
                     className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-80 group-hover:opacity-100 transition">✕</button>
                 </div>
               ))}
@@ -127,11 +154,13 @@ export default function JerseysPage() {
         </div>
         <div className="flex gap-2">
           <button type="submit" disabled={loading} className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
-            {loading ? "Saving..." : editing ? "Update" : "Launch"}
+            {loading ? "Uploading & Saving..." : editing ? "Update" : "Launch"}
           </button>
           {editing && (
-            <button type="button" onClick={() => { setEditing(null); setForm({ title: "", designUrls: [] }); }}
-              className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition">Batal</button>
+            <button type="button"
+              onClick={() => { setEditing(null); setForm({ title: "", designUrls: [] }); setPendingFiles([]); }}
+              className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition"
+              >Batal</button>
           )}
         </div>
       </form>
@@ -173,6 +202,8 @@ export default function JerseysPage() {
               <div className="flex gap-2 flex-shrink-0 flex-wrap">
                 <button onClick={() => setViewJersey(viewJersey?.id === j.id ? null : j)}
                   className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewJersey?.id === j.id ? "Tutup" : "Lihat"}</button>
+                <button onClick={() => downloadReport(`/api/reports?type=jersey&id=${j.id}`)}
+                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition">📥 Report</button>
                 <button onClick={() => toggleStatus(j)}
                   className={`px-3 py-1 rounded text-sm text-white ${j.status === "open" ? "bg-yellow-600" : ""}`}
                   style={j.status !== "open" ? { backgroundColor: primary } : undefined}>
@@ -193,7 +224,7 @@ export default function JerseysPage() {
                   <div className="overflow-x-auto -mx-6 px-6">
                   <table className="w-full text-sm min-w-[500px]">
                     <thead><tr className="text-gray-400 text-left">
-                      <th className="py-1">#</th><th>Pendaftar</th><th>Nama Jersey</th><th>Telepon</th><th>Nomor</th><th>Ukuran</th>
+                      <th className="py-1">#</th><th>Pendaftar</th><th>Nama Jersey</th><th>Telepon</th><th>Nomor</th><th>Ukuran</th><th>Tipe</th>
                     </tr></thead>
                     <tbody>
                       {j.registrations.map((r, i) => (
@@ -204,6 +235,11 @@ export default function JerseysPage() {
                           <td>{r.phone}</td>
                           <td><span className="bg-green-800 text-green-300 px-2 py-0.5 rounded font-mono">{r.number}</span></td>
                           <td>{r.size}</td>
+                          <td>
+                            <span className={`px-2 py-0.5 rounded text-xs ${r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"}`}>
+                              {r.jerseyType === "goalkeeper" ? "🧤 Kiper" : "⚽ Pemain"}
+                            </span>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

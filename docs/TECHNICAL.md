@@ -21,7 +21,7 @@ Aplikasi ini menggunakan **Next.js 16 (App Router)** dengan arsitektur **SOLID**
 Browser
   ↓
 Next.js App Router (src/app/)
-  ├── User Pages (/, /event/[id], /jersey/[slug])
+  ├── User Pages (/, /event/[id], /jersey/[slug], /highlight/[id], /vote/[id])
   ├── Admin Pages (/manage-jfc/dashboard/*)
   └── API Routes (/api/*)
         ↓
@@ -58,6 +58,7 @@ joinfc/
 │   │   ├── layout.tsx             # Root layout (I18nProvider)
 │   │   ├── page.tsx               # Homepage (user-facing)
 │   │   ├── event/[id]/page.tsx    # Detail event & registrasi
+│   │   ├── highlight/[id]/page.tsx # Detail galeri (judul, gambar, deskripsi)
 │   │   ├── jersey/[slug]/page.tsx # Detail jersey & order
 │   │   ├── manage-jfc/
 │   │   │   ├── page.tsx           # Admin login
@@ -65,13 +66,13 @@ joinfc/
 │   │   │   └── dashboard/
 │   │   │       ├── layout.tsx     # Sidebar + AdminThemeProvider + I18nProvider
 │   │   │       ├── page.tsx       # Dashboard overview
-│   │   │       ├── settings/      # Pengaturan website + ubah password
-│   │   │       ├── highlights/    # Galeri aktivitas (CRUD)
+│   │   │       ├── settings/      # Pengaturan website (link ke ubah password)
+│   │   │       ├── password/      # Ubah password admin (halaman terpisah)
+│   │   │       ├── highlights/    # Galeri aktivitas (CRUD + rich text)
 │   │   │       ├── news/          # Berita & aktivitas (CRUD)
-│   │   │       ├── events/        # Open events (CRUD + registrasi)
-│   │   │       ├── jerseys/       # Jersey launch (CRUD + registrasi)
-│   │   │       ├── votes/         # Voting system (CRUD)
-│   │   │       └── reports/       # Download Excel reports
+│   │   │       ├── events/        # Open events (CRUD + registrasi + download report)
+│   │   │       ├── jerseys/       # Jersey launch (CRUD + registrasi + download report)
+│   │   │       └── votes/         # Voting system (CRUD)
 │   │   └── api/                   # REST API routes
 │   │       ├── auth/              # Login/logout
 │   │       ├── settings/          # Site settings
@@ -334,9 +335,9 @@ const events = await container.eventService.findAll();
 - Dikonfigurasi di admin settings
 
 ### 7. Export Excel
-- Download laporan event (termasuk kolom Posisi)
-- Download laporan jersey
-- Download semua event sekaligus
+- Download laporan event per-event atau semua event (tombol di halaman Events admin)
+- Download laporan jersey per-jersey (tombol di halaman Jersey admin)
+- Report terintegrasi langsung di masing-masing halaman admin (tidak ada menu Reports terpisah)
 
 ### 8. Kalender Event (Homepage)
 - Menampilkan kalender visual mini di homepage
@@ -379,10 +380,21 @@ const events = await container.eventService.findAll();
   - Jersey: 800×800 px (1:1, multiple)
   - Vote options: 800×800 px (1:1)
 
-### 14. Galeri Carousel
+### 14. Galeri Carousel & Detail Page
 - Galeri highlights ditampilkan sebagai carousel horizontal (scroll)
-- Klik gambar untuk melihat detail dalam modal popup
+- Klik gambar untuk melihat halaman detail (`/highlight/[id]`) dengan judul, gambar, dan deskripsi rich text
+- Admin bisa menambahkan deskripsi berformat (bold, italic, list, heading) via rich text editor
 - Custom scrollbar styling
+
+### 15. Jersey Type
+- Pendaftaran jersey mendukung tipe Pemain (⚽) dan Kiper (🧤)
+- Selector button di halaman public jersey
+- Kolom tipe ditampilkan di tabel admin
+
+### 16. Password Admin
+- Ubah password ada di halaman terpisah (`/manage-jfc/dashboard/password`)
+- Diakses via link di halaman Pengaturan
+- Validasi: minimal 6 karakter, konfirmasi password harus cocok
 
 ## Environment Variables
 
