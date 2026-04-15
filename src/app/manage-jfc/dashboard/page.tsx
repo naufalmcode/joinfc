@@ -40,12 +40,12 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-8 bg-gray-800 rounded-xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">Quick Links</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">{t("quickLinks")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <QuickLink href="/manage-jfc/dashboard/events" label="Buat Event Baru" desc="Atur jadwal main baru" />
-          <QuickLink href="/manage-jfc/dashboard/jerseys" label="Launch Jersey" desc="Buat pre-order jersey" />
-          <QuickLink href="/manage-jfc/dashboard/settings" label="Pengaturan Web" desc="Ubah tema, logo, deskripsi" />
-          <QuickLink href="/manage-jfc/dashboard/reports" label="Download Report" desc="Export data ke Excel" />
+          <QuickLink href="/manage-jfc/dashboard/events" label={t("createEvent")} desc={t("createEventDesc")} />
+          <QuickLink href="/manage-jfc/dashboard/jerseys" label={t("launchNewJersey")} desc={t("launchJerseyDesc")} />
+          <QuickLink href="/manage-jfc/dashboard/settings" label={t("websiteSettings")} desc={t("settingsDesc")} />
+          <QuickLink href="/manage-jfc/dashboard/reports" label={t("downloadReports")} desc={t("downloadReportsDesc")} />
         </div>
       </div>
     </div>

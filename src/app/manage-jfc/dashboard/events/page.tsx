@@ -147,12 +147,12 @@ export default function EventsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-        <h1 className="text-3xl font-bold text-white">Events</h1>
+        <h1 className="text-3xl font-bold text-white">{t("events")}</h1>
         <button
           onClick={() => downloadReport("/api/reports?type=all-events")}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2"
         >
-          📥 Download Semua Event
+          📥 {t("downloadAllEvents")}
         </button>
       </div>
 
@@ -220,9 +220,9 @@ export default function EventsPage() {
                   <div className="flex items-center gap-3">
                     <h3 className="text-white font-bold text-lg">{ev.title}</h3>
                     {ev.status === "open" ? (
-                      <span className="px-2 py-0.5 rounded text-xs font-medium text-white" style={{ backgroundColor: primary }}>open</span>
+                      <span className="px-2 py-0.5 rounded text-xs font-medium text-white" style={{ backgroundColor: primary }}>{t("statusOpen")}</span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-600 text-white">closed</span>
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-600 text-white">{t("statusClosed")}</span>
                     )}
                   </div>
                   <p className="text-sm mt-1" style={{ color: primary }}>
@@ -236,20 +236,20 @@ export default function EventsPage() {
                   </p>
                   <p className="text-gray-400 text-sm">💳 {ev.bankAccount}</p>
                   <p className="text-gray-300 text-sm mt-2">
-                    Pemain: <span className="font-semibold" style={{ color: primary }}>{confirmedPlayers}/{ev.maxPlayers}</span>
-                    {" | "}Kiper: <span className="text-blue-400 font-semibold">{confirmedGK}/{ev.maxGoalkeepers}</span>
-                    {waiting > 0 && <span className="text-yellow-400 ml-2">+ {waiting} waiting list</span>}
+                    {t("players")}: <span className="font-semibold" style={{ color: primary }}>{confirmedPlayers}/{ev.maxPlayers}</span>
+                    {" | "}{t("goalkeepers")}: <span className="text-blue-400 font-semibold">{confirmedGK}/{ev.maxGoalkeepers}</span>
+                    {waiting > 0 && <span className="text-yellow-400 ml-2">+ {waiting} {t("waitingList")}</span>}
                   </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0 flex-wrap">
                   <button onClick={() => setViewEvent(viewEvent?.id === ev.id ? null : ev)}
-                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewEvent?.id === ev.id ? "Tutup" : "Lihat"}</button>
+                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewEvent?.id === ev.id ? t("closeView") : t("viewDetail")}</button>
                   <button onClick={() => downloadReport(`/api/reports?type=event&id=${ev.id}`)}
                     className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition">📥 Report</button>
                   <button onClick={() => toggleStatus(ev)}
                     className={`px-3 py-1 rounded text-sm text-white ${ev.status === "open" ? "bg-yellow-600" : ""}`}
                     style={ev.status !== "open" ? { backgroundColor: primary } : undefined}>
-                    {ev.status === "open" ? "Close" : "Open"}
+                    {ev.status === "open" ? t("closeStatus") : t("openStatus")}
                   </button>
                   <button onClick={() => handleEdit(ev)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">{t("editEvent")}</button>
                   <button onClick={() => setDeleteId(ev.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">{t("delete")}</button>
@@ -260,17 +260,17 @@ export default function EventsPage() {
                 <div className="mt-4 border-t border-gray-700 pt-4">
                   <h4 className="text-white font-semibold mb-2">{t("participants")}</h4>
                   {ev.registrations.length === 0 ? (
-                    <p className="text-gray-500 text-sm">Belum ada yang daftar.</p>
+                    <p className="text-gray-500 text-sm">{t("noRegistrations")}</p>
                   ) : (
                     <div className="overflow-x-auto -mx-6 px-6">
                     <table className="w-full text-sm min-w-[600px]">
                       <thead>
                         <tr className="text-gray-400 text-left">
                           <th className="py-1">#</th>
-                          <th className="py-1">Nama</th>
-                          <th className="py-1">Telepon</th>
-                          <th className="py-1">Posisi</th>
-                          <th className="py-1">Aksi</th>
+                          <th className="py-1">{t("name")}</th>
+                          <th className="py-1">{t("phoneCol")}</th>
+                          <th className="py-1">{t("position")}</th>
+                          <th className="py-1">{t("actions")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -281,7 +281,7 @@ export default function EventsPage() {
                             <td className="py-1.5">{r.phone || "-"}</td>
                             <td className="py-1.5">
                               <span className={`px-2 py-0.5 rounded text-xs ${r.position === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"}`}>
-                                {r.position === "goalkeeper" ? "🧤 Kiper" : "⚽ Pemain"}
+                                {r.position === "goalkeeper" ? `🧤 ${t("goalkeeper")}` : `⚽ ${t("player")}`}
                               </span>
                             </td>
                             <td className="py-1.5">
@@ -292,13 +292,13 @@ export default function EventsPage() {
                                     r.status === "registered" ? "bg-blue-700 text-white" :
                                     "bg-yellow-700 text-white"
                                   }`}>
-                                  <option value="waiting">⏳ Waiting</option>
-                                  <option value="registered">📋 Registered</option>
-                                  <option value="confirmed">✓ Confirmed</option>
+                                  <option value="waiting">⏳ {t("waiting")}</option>
+                                  <option value="registered">📋 {t("statusRegistered")}</option>
+                                  <option value="confirmed">✓ {t("confirmed")}</option>
                                 </select>
                                 <button onClick={() => updateRegPosition(r.id, r.position === "player" ? "goalkeeper" : "player")}
                                   className="px-2 py-0.5 bg-purple-700 hover:bg-purple-600 text-white rounded text-xs transition">
-                                  → {r.position === "player" ? "Kiper" : "Pemain"}
+                                  → {r.position === "player" ? t("goalkeeper") : t("player")}
                                 </button>
                                 <button onClick={() => { setDeleteRegId(r.id); setDeleteRegEventId(ev.id); }}
                                   className="px-2 py-0.5 bg-red-700 hover:bg-red-600 text-white rounded text-xs transition">{t("delete")}</button>
@@ -315,13 +315,13 @@ export default function EventsPage() {
             </div>
           );
         })}
-        {events.length === 0 && <p className="text-gray-500">Belum ada event.</p>}
+        {events.length === 0 && <p className="text-gray-500">{t("noEventsYet")}</p>}
       </div>
 
       <ConfirmModal
         open={!!deleteId}
-        title="Hapus Event"
-        message="Yakin ingin menghapus event ini beserta semua registrasi?"
+        title={t("deleteEventTitle")}
+        message={t("deleteEventMessage")}
         confirmText={t("delete")}
         cancelText={t("cancel")}
         onConfirm={() => deleteId && handleDelete(deleteId)}
@@ -330,8 +330,8 @@ export default function EventsPage() {
 
       <ConfirmModal
         open={!!deleteRegId}
-        title="Hapus Peserta"
-        message="Yakin ingin menghapus peserta ini dari daftar?"
+        title={t("deleteParticipantTitle")}
+        message={t("deleteParticipantMessage")}
         confirmText={t("delete")}
         cancelText={t("cancel")}
         onConfirm={() => deleteRegId && deleteReg(deleteRegId)}

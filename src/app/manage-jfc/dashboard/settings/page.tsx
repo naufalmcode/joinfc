@@ -85,7 +85,7 @@ export default function SettingsPage() {
           });
           (updated as Record<string, string>)[field] = url;
         } catch (err) {
-          setMsg("Upload gagal: " + (err instanceof Error ? err.message : "Unknown error"));
+          setMsg(t("uploadFailed") + (err instanceof Error ? err.message : "Unknown error"));
           setSaving(false);
           setUploadProgress(null);
           return;
@@ -106,7 +106,7 @@ export default function SettingsPage() {
       setPendingLogo(null);
       setPendingHero(null);
     } else {
-      setMsg("Gagal: " + data.error);
+      setMsg(t("saveFailed") + data.error);
     }
     setSaving(false);
   }
@@ -156,7 +156,7 @@ export default function SettingsPage() {
 
           <div>
             <label className="block text-gray-300 text-sm mb-1">{t("logo")}</label>
-            <p className="text-gray-500 text-xs mb-2">Rekomendasi: 200 × 200 px (rasio 1:1, format PNG transparan)</p>
+            <p className="text-gray-500 text-xs mb-2">{t("recommendLogoSize")}</p>
             <div className="flex items-center gap-4">
               {(pendingLogo ? logoPreview : settings.logoUrl) && (
                 <img src={(pendingLogo ? logoPreview : settings.logoUrl)!} alt="Logo" className={`w-16 h-16 object-contain bg-gray-700 rounded ${pendingLogo ? "border-2 border-dashed border-yellow-500" : ""}`} />
@@ -222,7 +222,7 @@ export default function SettingsPage() {
           {settings.heroType === "image" && (
             <div>
               <label className="block text-gray-300 text-sm mb-2">{t("uploadHeroImage")}</label>
-              <p className="text-gray-500 text-xs mb-2">Rekomendasi: 1920 × 600 px (rasio 16:5, landscape)</p>
+              <p className="text-gray-500 text-xs mb-2">{t("recommendHeroSize")}</p>
               <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 {t("chooseFile")}
@@ -269,13 +269,13 @@ export default function SettingsPage() {
           </div>
 
           <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: settings.primaryColor }}>
-            <p className="font-bold" style={{ color: settings.accentColor }}>Preview Warna Tema</p>
-            <p className="text-sm" style={{ color: "#fff" }}>Ini adalah preview warna yang dipilih</p>
+            <p className="font-bold" style={{ color: settings.accentColor }}>{t("previewColors")}</p>
+            <p className="text-sm" style={{ color: "#fff" }}>{t("previewText")}</p>
           </div>
         </div>
 
         {msg && (
-          <p className={`text-sm ${msg.startsWith("Gagal") ? "text-red-400" : "text-green-400"}`}>{msg}</p>
+          <p className={`text-sm ${msg === t("savedSuccess") ? "text-green-400" : "text-red-400"}`}>{msg}</p>
         )}
 
         {uploadProgress && (
@@ -293,7 +293,7 @@ export default function SettingsPage() {
       <div className="max-w-2xl mt-6">
         <Link href="/manage-jfc/dashboard/password"
           className="inline-flex items-center gap-2 px-5 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition font-medium">
-          🔒 Ubah Password Admin →
+          🔒 {t("changeAdminPassword")} →
         </Link>
       </div>
 

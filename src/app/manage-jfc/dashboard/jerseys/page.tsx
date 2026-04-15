@@ -183,10 +183,10 @@ export default function JerseysPage() {
       <form onSubmit={handleSubmit} className="bg-gray-800 rounded-xl p-6 mb-8 space-y-4 max-w-2xl">
         <h2 className="text-lg font-semibold text-white">{editing ? `${t("edit")} Jersey` : t("launchNewJersey")}</h2>
         <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          placeholder="Nama Jersey (contoh: Jersey Home 2024)" className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 admin-input" required />
+          placeholder={t("jerseyName")} className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 admin-input" required />
         <div>
           <label className="block text-gray-300 text-sm mb-1">{t("uploadDesign")}</label>
-          <p className="text-gray-500 text-xs mb-2">Rekomendasi: 800 × 800 px (rasio 1:1, bisa upload banyak)</p>
+          <p className="text-gray-500 text-xs mb-2">{t("recommendDesignSize")}</p>
           <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             {t("chooseFile")}
@@ -213,24 +213,24 @@ export default function JerseysPage() {
         </div>
         {/* Pricing Section */}
         <div className="border-t border-gray-700 pt-4 mt-4">
-          <h3 className="text-white font-semibold mb-3">Harga Jersey</h3>
+          <h3 className="text-white font-semibold mb-3">{t("jerseyPricing")}</h3>
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Harga Normal</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("normalPrice")}</label>
             <div className="relative w-full sm:w-64">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
               <input type="text" inputMode="numeric" value={formatNumber(form.basePrice)} onChange={(e) => setForm((f) => ({ ...f, basePrice: parseNumber(e.target.value) }))}
                 placeholder="200.000" className="w-full pl-10 pr-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 admin-input" />
             </div>
-            <p className="text-gray-500 text-xs mt-1">Harga default untuk semua ukuran & tipe (jika tidak ada harga khusus di bawah)</p>
+            <p className="text-gray-500 text-xs mt-1">{t("normalPriceHint")}</p>
           </div>
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-gray-300 text-sm font-medium">Tambahan Harga per Ukuran (opsional)</label>
+              <label className="text-gray-300 text-sm font-medium">{t("sizeSurchargeLabel")}</label>
               <button type="button" onClick={() => setForm((f) => ({ ...f, surchargeList: [...f.surchargeList, { size: "XXL", itemType: "set", surcharge: 0 }] }))}
-                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition">+ Tambah</button>
+                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition">{t("addMore")}</button>
             </div>
             {form.surchargeList.length === 0 ? (
-              <p className="text-gray-500 text-sm">Belum ada tambahan harga. Semua ukuran menggunakan harga normal.</p>
+              <p className="text-gray-500 text-sm">{t("noSurchargesYet")}</p>
             ) : (
               <div className="space-y-2">
                 {form.surchargeList.map((item, idx) => (
@@ -240,7 +240,7 @@ export default function JerseysPage() {
                     }} className="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 text-sm admin-input">
                       {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
-                    <span className="px-3 py-2 text-gray-400 text-xs whitespace-nowrap">harga 1 stel</span>
+                    {/* <span className="px-3 py-2 text-gray-400 text-xs whitespace-nowrap">harga 1 stel</span> */}
                     <div className="flex-1">
                       <div className="relative w-full">
                         <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
@@ -258,12 +258,12 @@ export default function JerseysPage() {
           </div>
           <div className="mt-4 border-t border-gray-700 pt-4">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-gray-300 text-sm font-medium">Tambahan Khusus Ukuran Baju (opsional)</label>
+              <label className="text-gray-300 text-sm font-medium">{t("shirtSizeSurchargeLabel")}</label>
               <button type="button" onClick={() => setForm((f) => ({ ...f, shirtSizeSurchargeList: [...f.shirtSizeSurchargeList, { shirtSize: "XXL", surcharge: 0 }] }))}
-                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition">+ Tambah</button>
+                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition">{t("addMore")}</button>
             </div>
             {form.shirtSizeSurchargeList.length === 0 ? (
-              <p className="text-gray-500 text-sm">Belum ada tambahan ukuran baju khusus.</p>
+              <p className="text-gray-500 text-sm">{t("noShirtSurchargesYet")}</p>
             ) : (
               <div className="space-y-2">
                 {form.shirtSizeSurchargeList.map((item, idx) => (
@@ -297,7 +297,7 @@ export default function JerseysPage() {
           )}
           <div className="flex gap-2">
           <button type="submit" disabled={loading} className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
-            {loading ? "Uploading & Saving..." : editing ? "Update" : "Launch"}
+            {loading ? t("uploadingAndSaving") : editing ? t("update") : t("launch")}
           </button>
           {editing && (
             <button type="button"
@@ -344,8 +344,8 @@ export default function JerseysPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-400 text-sm mt-1">Pendaftar: {j.registrations.length}</p>
-                  {j.basePrice > 0 && <p className="text-green-400 text-sm mt-1">Harga: {formatRupiah(j.basePrice)}</p>}
+                  <p className="text-gray-400 text-sm mt-1">{t("registrantsCount")}: {j.registrations.length}</p>
+                  {j.basePrice > 0 && <p className="text-green-400 text-sm mt-1">{t("priceLabel")}: {formatRupiah(j.basePrice)}</p>}
                   <p className="text-blue-400 text-sm mt-1">
                     Link: <code className="bg-gray-700 px-2 py-0.5 rounded">/jersey/{j.slug}</code>
                   </p>
@@ -353,13 +353,13 @@ export default function JerseysPage() {
               </div>
               <div className="flex gap-2 flex-shrink-0 flex-wrap">
                 <button onClick={() => setViewJersey(viewJersey?.id === j.id ? null : j)}
-                  className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewJersey?.id === j.id ? "Tutup" : "Lihat"}</button>
+                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewJersey?.id === j.id ? t("closeView") : t("viewDetail")}</button>
                 <button onClick={() => downloadReport(`/api/reports?type=jersey&id=${j.id}`)}
                   className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition">📥 Report</button>
                 <button onClick={() => toggleStatus(j)}
                   className={`px-3 py-1 rounded text-sm text-white ${j.status === "open" ? "bg-yellow-600" : ""}`}
                   style={j.status !== "open" ? { backgroundColor: primary } : undefined}>
-                  {j.status === "open" ? "Close" : "Open"}
+                  {j.status === "open" ? t("closeStatus") : t("openStatus")}
                 </button>
                 <button onClick={() => {
                   setEditing(j.id);
@@ -396,7 +396,7 @@ export default function JerseysPage() {
                   <div className="overflow-x-auto -mx-6 px-6">
                   <table className="w-full text-sm min-w-[600px]">
                     <thead><tr className="text-gray-400 text-left">
-                      <th className="py-1">#</th><th>Pendaftar</th><th>Nama Jersey</th><th>Telepon</th><th>Nomor</th><th>Ukuran</th><th>Ukuran Baju</th><th>Tipe</th><th>Item</th><th>Harga</th>
+                      <th className="py-1">#</th><th>{t("registrantCol")}</th><th>{t("jerseyName2")}</th><th>{t("phoneCol")}</th><th>{t("numberCol")}</th><th>{t("sizeCol")}</th><th>{t("shirtSizeCol")}</th><th>{t("typeCol")}</th><th>{t("itemCol")}</th><th>{t("priceCol")}</th>
                     </tr></thead>
                     <tbody>
                       {j.registrations.map((r, i) => (
@@ -410,12 +410,12 @@ export default function JerseysPage() {
                           <td>{r.shirtSize || "-"}</td>
                           <td>
                             <span className={`px-2 py-0.5 rounded text-xs ${r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"}`}>
-                              {r.jerseyType === "goalkeeper" ? "🧤 Kiper" : "⚽ Pemain"}
+                              {r.jerseyType === "goalkeeper" ? `🧤 ${t("goalkeeper")}` : `⚽ ${t("player")}`}
                             </span>
                           </td>
                           <td>
                             <span className="text-xs text-gray-400">
-                              {r.itemType === "shirt" ? "👕 Baju" : r.itemType === "shorts" ? "👟 Celana" : "👕👟 Stel"}
+                              {r.itemType === "shirt" ? `👕 ${t("itemTypeShirt")}` : r.itemType === "shorts" ? `👟 ${t("itemTypeShorts")}` : `👕👟 ${t("setLabel")}`}
                             </span>
                           </td>
                           <td>
@@ -431,15 +431,15 @@ export default function JerseysPage() {
             )}
           </div>
         ))}
-        {jerseys.length === 0 && <p className="text-gray-500">Belum ada jersey launch.</p>}
+        {jerseys.length === 0 && <p className="text-gray-500">{t("noJerseysYet")}</p>}
       </div>
 
       <ConfirmModal
         open={!!deleteId}
-        title="Hapus Jersey"
-        message="Yakin ingin menghapus jersey launch ini?"
-        confirmText="Hapus"
-        cancelText="Batal"
+        title={t("deleteJerseyTitle")}
+        message={t("deleteJerseyMessage")}
+        confirmText={t("delete")}
+        cancelText={t("cancel")}
         onConfirm={() => deleteId && handleDelete(deleteId)}
         onCancel={() => setDeleteId(null)}
       />

@@ -88,7 +88,7 @@ export default function VotesPage() {
             setUploadProgress({ ...p, current: uploadIdx, totalFiles: filesToUpload.length });
           });
         } catch {
-          alert("Gagal upload gambar.");
+          alert(t("uploadImageFailed"));
         }
       }
       resolvedOptions.push({ name: o.name, imageUrl });
@@ -202,7 +202,7 @@ export default function VotesPage() {
                           className="hidden"
                         />
                       </label>
-                      <p className="text-xs text-gray-500 mt-1">📐 800×800 px (1:1)</p>
+                      <p className="text-xs text-gray-500 mt-1">{t("recommendVoteImageSize")}</p>
                     </div>
                   )}
                 </div>
@@ -265,7 +265,7 @@ export default function VotesPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-white">{vote.title}</h3>
                   <span className={`text-xs px-2 py-1 rounded ${vote.status === "open" ? "bg-green-600" : "bg-red-600"} text-white`}>
-                    {vote.status === "open" ? "Open" : "Closed"}
+                    {vote.status === "open" ? t("statusOpen") : t("statusClosed")}
                   </span>
                   <span className="text-xs text-gray-400 ml-2">{t("totalVotes")}: {totalVotes}</span>
                 </div>
@@ -274,7 +274,7 @@ export default function VotesPage() {
                     onClick={() => toggleStatus(vote)}
                     className="px-3 py-1 text-sm rounded bg-gray-600 text-white hover:bg-gray-500 transition"
                   >
-                    {vote.status === "open" ? "Close" : "Open"}
+                    {vote.status === "open" ? t("closeStatus") : t("openStatus")}
                   </button>
                   <button
                     onClick={() => startEdit(vote)}

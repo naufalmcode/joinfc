@@ -208,6 +208,102 @@ export const translations = {
     voteNotFound: "Vote tidak ditemukan",
     noEventsThisMonth: "Tidak ada event bulan ini",
     noEventsYet: "Belum ada event",
+
+    // Shared admin strings
+    update: "Update",
+    launch: "Luncurkan",
+    uploadingAndSaving: "Mengupload & Menyimpan...",
+    viewDetail: "Lihat",
+    closeView: "Tutup",
+    statusOpen: "Buka",
+    statusClosed: "Tutup",
+    openStatus: "Buka",
+    closeStatus: "Tutup",
+    noImage: "Tanpa Gambar",
+    addMore: "+ Tambah",
+    name: "Nama",
+    actions: "Aksi",
+    link: "Link",
+
+    // Jersey admin
+    jerseyPricing: "Harga Jersey",
+    normalPrice: "Harga Normal",
+    normalPriceHint: "Harga default untuk semua ukuran & tipe (jika tidak ada harga khusus di bawah)",
+    sizeSurchargeLabel: "Tambahan Harga Ukuran 1 Stel (opsional)",
+    noSurchargesYet: "Belum ada tambahan harga. Semua ukuran menggunakan harga normal.",
+    shirtSizeSurchargeLabel: "Tambahan Khusus Ukuran Baju (opsional)",
+    noShirtSurchargesYet: "Belum ada tambahan ukuran baju khusus.",
+    registrantsCount: "Pendaftar",
+    price: "Harga",
+    jerseyName2: "Nama Jersey",
+    phoneCol: "Telepon",
+    numberCol: "Nomor",
+    sizeCol: "Ukuran",
+    shirtSizeCol: "Ukuran Baju",
+    typeCol: "Tipe",
+    itemCol: "Item",
+    priceCol: "Harga",
+    registrantCol: "Pendaftar",
+    noJerseysYet: "Belum ada jersey launch.",
+    deleteJerseyTitle: "Hapus Jersey",
+    deleteJerseyMessage: "Yakin ingin menghapus jersey launch ini?",
+    setLabel: "Stel",
+
+    // Event admin
+    deleteEventTitle: "Hapus Event",
+    deleteEventMessage: "Yakin ingin menghapus event ini beserta semua registrasi?",
+    deleteParticipantTitle: "Hapus Peserta",
+    deleteParticipantMessage: "Yakin ingin menghapus peserta ini dari daftar?",
+    statusRegistered: "Terdaftar",
+
+    // Highlights admin
+    descriptionOptional: "Deskripsi (opsional)",
+    photoMultiple: "Foto (bisa pilih banyak)",
+    recommendDesignSize: "Rekomendasi: 800 × 800 px (rasio 1:1, bisa upload banyak)",
+    recommendPhotoSize: "Rekomendasi: 800 × 600 px (rasio 4:3)",
+    noHighlightsYet: "Belum ada foto aktivitas.",
+    deletePhotoTitle: "Hapus Foto",
+    deletePhotoMessage: "Yakin ingin menghapus foto ini?",
+
+    // News admin
+    imageMultipleOptional: "Gambar (opsional, bisa upload banyak)",
+    recommendNewsImageSize: "Rekomendasi: 800 × 450 px (rasio 16:9)",
+    noNewsYet: "Belum ada berita.",
+    deleteNewsTitle: "Hapus Berita",
+    deleteNewsMessage: "Yakin ingin menghapus berita ini?",
+
+    // Settings admin
+    uploadFailed: "Upload gagal: ",
+    recommendLogoSize: "Rekomendasi: 200 × 200 px (rasio 1:1, format PNG transparan)",
+    recommendHeroSize: "Rekomendasi: 1920 × 600 px (rasio 16:5, landscape)",
+    changeAdminPassword: "Ubah Password Admin",
+
+    // Votes admin
+    uploadImageFailed: "Gagal upload gambar.",
+    recommendVoteImageSize: "📐 800×800 px (1:1)",
+
+    // Dashboard
+    quickLinks: "Akses Cepat",
+    createEventDesc: "Atur jadwal main baru",
+    launchJerseyDesc: "Buat pre-order jersey",
+    settingsDesc: "Ubah tema, logo, deskripsi",
+    downloadReportsDesc: "Export data ke Excel",
+
+    // Login page
+    loginPrompt: "Masukkan password untuk melanjutkan",
+    password: "Password",
+    loginFailed: "Login gagal",
+    login: "Masuk",
+
+    // Password page
+    changePassword: "Ubah Password",
+    currentPassword: "Password Saat Ini",
+    newPassword: "Password Baru",
+    confirmPassword: "Konfirmasi Password Baru",
+    passwordMismatch: "Password baru tidak cocok!",
+    passwordMinLength: "Password minimal 6 karakter!",
+    passwordChanged: "Password berhasil diubah!",
+    back: "Kembali",
   },
   en: {
     loading: "Loading...",
@@ -406,6 +502,102 @@ export const translations = {
     voteNotFound: "Vote not found",
     noEventsThisMonth: "No events this month",
     noEventsYet: "No events yet",
+
+    // Shared admin strings
+    update: "Update",
+    launch: "Launch",
+    uploadingAndSaving: "Uploading & Saving...",
+    viewDetail: "View",
+    closeView: "Close",
+    statusOpen: "Open",
+    statusClosed: "Closed",
+    openStatus: "Open",
+    closeStatus: "Close",
+    noImage: "No Image",
+    addMore: "+ Add",
+    name: "Name",
+    actions: "Actions",
+    link: "Link",
+
+    // Jersey admin
+    jerseyPricing: "Jersey Pricing",
+    normalPrice: "Normal Price",
+    normalPriceHint: "Default price for all sizes & types (if no specific price below)",
+    sizeSurchargeLabel: "Size Surcharge per Set (optional)",
+    noSurchargesYet: "No surcharges yet. All sizes use the normal price.",
+    shirtSizeSurchargeLabel: "Custom Shirt Size Surcharge (optional)",
+    noShirtSurchargesYet: "No custom shirt size surcharges yet.",
+    registrantsCount: "Registrants",
+    price: "Price",
+    jerseyName2: "Jersey Name",
+    phoneCol: "Phone",
+    numberCol: "Number",
+    sizeCol: "Size",
+    shirtSizeCol: "Shirt Size",
+    typeCol: "Type",
+    itemCol: "Item",
+    priceCol: "Price",
+    registrantCol: "Registrant",
+    noJerseysYet: "No jersey launches yet.",
+    deleteJerseyTitle: "Delete Jersey",
+    deleteJerseyMessage: "Are you sure you want to delete this jersey launch?",
+    setLabel: "Set",
+
+    // Event admin
+    deleteEventTitle: "Delete Event",
+    deleteEventMessage: "Are you sure you want to delete this event and all registrations?",
+    deleteParticipantTitle: "Delete Participant",
+    deleteParticipantMessage: "Are you sure you want to remove this participant?",
+    statusRegistered: "Registered",
+
+    // Highlights admin
+    descriptionOptional: "Description (optional)",
+    photoMultiple: "Photos (multiple selection)",
+    recommendDesignSize: "Recommended: 800 × 800 px (1:1 ratio, multiple upload)",
+    recommendPhotoSize: "Recommended: 800 × 600 px (4:3 ratio)",
+    noHighlightsYet: "No activity photos yet.",
+    deletePhotoTitle: "Delete Photo",
+    deletePhotoMessage: "Are you sure you want to delete this photo?",
+
+    // News admin
+    imageMultipleOptional: "Images (optional, multiple upload)",
+    recommendNewsImageSize: "Recommended: 800 × 450 px (16:9 ratio)",
+    noNewsYet: "No news yet.",
+    deleteNewsTitle: "Delete News",
+    deleteNewsMessage: "Are you sure you want to delete this news?",
+
+    // Settings admin
+    uploadFailed: "Upload failed: ",
+    recommendLogoSize: "Recommended: 200 × 200 px (1:1 ratio, transparent PNG)",
+    recommendHeroSize: "Recommended: 1920 × 600 px (16:5 ratio, landscape)",
+    changeAdminPassword: "Change Admin Password",
+
+    // Votes admin
+    uploadImageFailed: "Failed to upload image.",
+    recommendVoteImageSize: "📐 800×800 px (1:1)",
+
+    // Dashboard
+    quickLinks: "Quick Links",
+    createEventDesc: "Schedule a new match",
+    launchJerseyDesc: "Create jersey pre-order",
+    settingsDesc: "Change theme, logo, description",
+    downloadReportsDesc: "Export data to Excel",
+
+    // Login page
+    loginPrompt: "Enter password to continue",
+    password: "Password",
+    loginFailed: "Login failed",
+    login: "Login",
+
+    // Password page
+    changePassword: "Change Password",
+    currentPassword: "Current Password",
+    newPassword: "New Password",
+    confirmPassword: "Confirm New Password",
+    passwordMismatch: "New passwords do not match!",
+    passwordMinLength: "Password must be at least 6 characters!",
+    passwordChanged: "Password changed successfully!",
+    back: "Back",
   },
 } as const;
 

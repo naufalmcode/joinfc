@@ -99,7 +99,7 @@ joinfc/
 |       |-- api-utils.ts           # Response helpers
 |       |-- i18n/
 |       |   |-- index.tsx          # I18nProvider, useI18n, LanguageToggle
-|       |   +-- translations.ts   # ID/EN translation dictionary (~240+ keys)
+|       |   +-- translations.ts   # ID/EN translation dictionary (~350+ keys)
 |       |-- interfaces/
 |       |   |-- repository.interfaces.ts
 |       |   +-- service.interfaces.ts
@@ -224,16 +224,19 @@ npx next start
 **JerseyLaunch:**
 - `designUrls String[]` - Array URL gambar desain jersey (multi-image)
 - `basePrice` - Harga dasar jersey
-- `sizeSurcharges` - JSON string berisi array `{ size, itemType, surcharge }` untuk tambahan harga per ukuran/tipe
+- `sizeSurcharges` - JSON string berisi array surcharge rules:
+  - Base rules: `{ target: "base", size, itemType, surcharge }` - tambahan harga per ukuran/tipe
+  - Shirt rules: `{ target: "shirt", shirtSize, surcharge, itemType: "set" }` - tambahan harga ukuran baju khusus
 
 **JerseyRegistration:**
 - `registrantName` - Nama lengkap pemesan
 - `name` - Nama yang dicetak di jersey
 - `number` - Nomor jersey (1-99, unique per launch)
-- `size` - Ukuran (S/M/L/XL/XXL/3XL/4XL/5XL/6XL)
+- `size` - Ukuran utama (S/M/L/XL/XXL/3XL/4XL/5XL/6XL)
+- `shirtSize` - Ukuran baju khusus (opsional, default: "")
 - `jerseyType` - Tipe jersey ("player" | "goalkeeper", default: "player")
 - `itemType` - Tipe item ("set" | "shirt" | "shorts", default: "set")
-- `totalPrice` - Harga total (basePrice + surcharge matching size+itemType)
+- `totalPrice` - Harga total (basePrice + base surcharge + shirt surcharge)
 
 **Vote:**
 - `status` ("open" | "closed") - Admin bisa toggle
@@ -302,9 +305,10 @@ const events = await eventService.findAll();
 - Bahasa Indonesia (default) dan English
 - Toggle bahasa di pojok kanan atas (user) dan sidebar (admin)
 - Stored di localStorage key `jfc_lang`
-- ~250+ translation keys di `src/lib/i18n/translations.ts`
+- ~350+ translation keys di `src/lib/i18n/translations.ts`
 - **Halaman publik**: semua teks menggunakan `t()` (tidak ada hardcoded string)
-- **Halaman admin**: Dashboard, Settings, Events, Jersey, Highlights, News, Votes semua menggunakan `t()` untuk label, judul, dan tombol utama
+- **Halaman admin**: Semua halaman (Dashboard, Settings, Password, Events, Jersey, Highlights, News, Votes, Reports, Login) menggunakan `t()` untuk semua label, judul, tombol, placeholder, hint, tabel header, modal teks, dan pesan error/sukses
+- **Konsistensi**: Saat switching bahasa, seluruh UI berubah — termasuk tabel header, confirm dialog, rekomendasi dimensi upload, status badge, dan empty state messages
 
 ### 2. Sistem Tema Warna
 - 3 warna tema: Primary, Secondary, Accent
@@ -341,7 +345,12 @@ const events = await eventService.findAll();
 - Ukuran: S/M/L/XL/XXL/3XL/4XL/5XL/6XL
 - Tipe jersey: Pemain atau Kiper (`jerseyType`)
 - Tipe item: 1 Stel / Baju Saja / Celana Saja (`itemType`)
-- **Harga**: `basePrice` + `surcharge` per ukuran+tipe. Surcharge disimpan sebagai JSON array di `sizeSurcharges`. Lookup: exact match size+itemType dulu, fallback ke size-only
+- **Ukuran Baju Khusus** (`shirtSize`): Opsional. Muncul jika admin sudah set surcharge ukuran baju khusus. User bisa pilih ukuran baju berbeda dari ukuran utama
+- **Harga dual-layer**:
+  - Layer 1 (Base): `basePrice` + surcharge dari `target: "base"` rules (match size+itemType)
+  - Layer 2 (Shirt): surcharge dari `target: "shirt"` rules (match shirtSize)
+  - Total = basePrice + base surcharge + shirt surcharge
+- **Admin form**: 2 section surcharge terpisah — "Tambahan Harga Ukuran 1 Stel" dan "Tambahan Khusus Ukuran Baju"
 - Multi-image upload desain (`designUrls String[]`)
 - **Carousel auto-slide** setiap 3 detik (pause saat lightbox buka)
 - **Indikator slide** (dots + counter X/N) + hint "Klik untuk lihat penuh" saat hover

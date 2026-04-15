@@ -27,7 +27,7 @@ Klik tombol bahasa di pojok kanan atas (dengan ikon bendera SVG):
 - ID = Bahasa Indonesia (default)
 - EN = English
 
-> Bahasa berlaku untuk seluruh halaman publik **dan admin**. Semua label, judul, dan tombol akan berubah sesuai bahasa yang dipilih.
+> Bahasa berlaku untuk seluruh halaman publik **dan admin** (termasuk login, password, reports). Semua label, judul, tombol, tabel header, hint, modal konfirmasi, dan pesan error/sukses akan berubah sesuai bahasa yang dipilih.
 
 ### Mendaftar Event
 1. Di halaman utama, klik **"Daftar Sekarang"** pada event yang diinginkan
@@ -52,7 +52,8 @@ Klik tombol bahasa di pojok kanan atas (dengan ikon bendera SVG):
    - **Nama Jersey** (otomatis huruf kapital saat diketik)
    - **Nomor Telepon**
    - **Ukuran** (S / M / L / XL / XXL / 3XL / 4XL / 5XL / 6XL)
-6. Harga ditampilkan otomatis berdasarkan ukuran dan tipe item yang dipilih
+   - **Ukuran Baju Khusus** (opsional) - Jika admin sudah mengatur surcharge ukuran baju, akan muncul dropdown untuk memilih ukuran baju berbeda dari ukuran utama
+6. Harga ditampilkan otomatis berdasarkan ukuran, tipe item, dan ukuran baju yang dipilih
 7. Klik **"Pesan Jersey #(nomor)"
 **
 
@@ -135,10 +136,11 @@ Mengelola jersey launch:
 - **Launch Jersey Baru** - Isi nama dan upload desain (bisa banyak gambar)
 - **Harga Jersey:**
   - **Harga Normal** (base price) - Harga default untuk semua ukuran & tipe. Input dengan format Rupiah otomatis (Rp + pemisah ribuan)
-  - **Tambahan Harga per Ukuran** (opsional) - Surcharge untuk ukuran/tipe tertentu. Setiap entry berisi: ukuran, tipe item (1 Stel / Baju Saja), dan nominal tambahan
-  - Harga akhir = Harga Normal + Tambahan Harga (jika ada)
+  - **Tambahan Harga Ukuran 1 Stel** (opsional) - Surcharge untuk ukuran tertentu. Setiap entry berisi: ukuran dan nominal tambahan
+  - **Tambahan Khusus Ukuran Baju** (opsional) - Surcharge jika user memilih ukuran baju berbeda dari ukuran utama. Setiap entry berisi: ukuran baju dan nominal tambahan
+  - Harga akhir = Harga Normal + Tambahan Harga Ukuran + Tambahan Ukuran Baju
 - Upload menggunakan pola *deferred upload* - gambar di-preview dulu, baru diupload saat submit
-- **Lihat Peserta** - Klik "Lihat" untuk melihat daftar pemesanan (pendaftar, nama jersey, telepon, nomor, ukuran, tipe pemain/kiper, tipe item, harga)
+- **Lihat Peserta** - Klik "Lihat" untuk melihat daftar pemesanan (pendaftar, nama jersey, telepon, nomor, ukuran, ukuran baju, tipe pemain/kiper, tipe item, harga)
 - **Download Report** - Klik "Report" pada setiap jersey untuk download Excel
 - **Toggle Open/Close** - Buka/tutup pemesanan
 - **Link Share** - Salin link `/jersey/[slug]` untuk dibagikan

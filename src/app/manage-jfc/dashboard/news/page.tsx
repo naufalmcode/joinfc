@@ -152,8 +152,8 @@ export default function NewsPage() {
           required
         />
         <div>
-          <label className="block text-gray-300 text-sm mb-1">Gambar (opsional, bisa upload banyak)</label>
-          <p className="text-gray-500 text-xs mb-2">Rekomendasi: 800 × 450 px (rasio 16:9)</p>
+          <label className="block text-gray-300 text-sm mb-1">{t("imageMultipleOptional")}</label>
+          <p className="text-gray-500 text-xs mb-2">{t("recommendNewsImageSize")}</p>
           <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             {t("chooseFile")}
@@ -187,7 +187,7 @@ export default function NewsPage() {
           <div className="flex gap-2">
           <button type="submit" disabled={loading}
             className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
-            {loading ? "Uploading & Saving..." : editing ? "Update" : t("save")}
+            {loading ? t("uploadingAndSaving") : editing ? t("update") : t("save")}
           </button>
           {editing && (
             <button type="button" onClick={() => {
@@ -229,13 +229,13 @@ export default function NewsPage() {
             </div>
           </div>
         ))}
-        {newsList.length === 0 && <p className="text-gray-500">Belum ada berita.</p>}
+        {newsList.length === 0 && <p className="text-gray-500">{t("noNewsYet")}</p>}
       </div>
 
       <ConfirmModal
         open={!!deleteId}
-        title="Hapus Berita"
-        message="Yakin ingin menghapus berita ini?"
+        title={t("deleteNewsTitle")}
+        message={t("deleteNewsMessage")}
         confirmText={t("delete")}
         cancelText={t("cancel")}
         onConfirm={() => deleteId && handleDelete(deleteId)}
