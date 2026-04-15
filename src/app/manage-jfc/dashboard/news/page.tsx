@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
+import { useI18n } from "@/lib/i18n";
 import ConfirmModal from "@/components/ConfirmModal";
 import UploadProgressBar from "@/components/UploadProgressBar";
 import { uploadFiles as uploadFilesUtil, type UploadProgress } from "@/lib/upload";
@@ -17,6 +18,7 @@ interface NewsItem {
 
 export default function NewsPage() {
   const { primary } = useAdminTheme();
+  const { t } = useI18n();
   const [newsList, setNewsList] = useState<NewsItem[]>([]);
   const [form, setForm] = useState({ title: "", content: "" });
   const [existingUrls, setExistingUrls] = useState<string[]>([]);
@@ -128,23 +130,23 @@ export default function NewsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8">Berita & Aktivitas</h1>
+      <h1 className="text-3xl font-bold text-white mb-8">{t("news")}</h1>
 
       <form onSubmit={handleSubmit} className="bg-gray-800 rounded-xl p-6 mb-8 space-y-4 max-w-2xl">
         <h2 className="text-lg font-semibold text-white">
-          {editing ? "Edit Berita" : "Tambah Berita"}
+          {editing ? t("editNews") : t("addNews")}
         </h2>
         <input
           value={form.title}
           onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          placeholder="Judul Berita"
+          placeholder={t("newsTitle")}
           className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 admin-input"
           required
         />
         <textarea
           value={form.content}
           onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-          placeholder="Isi berita..."
+          placeholder={t("newsContent")}
           rows={5}
           className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 admin-input"
           required
@@ -154,7 +156,7 @@ export default function NewsPage() {
           <p className="text-gray-500 text-xs mb-2">Rekomendasi: 800 × 450 px (rasio 16:9)</p>
           <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            Pilih File
+            {t("chooseFile")}
             <input type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
           </label>
           {(existingUrls.length > 0 || pendingImages.length > 0) && (
@@ -185,7 +187,7 @@ export default function NewsPage() {
           <div className="flex gap-2">
           <button type="submit" disabled={loading}
             className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
-            {loading ? "Uploading & Saving..." : editing ? "Update" : "Tambah"}
+            {loading ? "Uploading & Saving..." : editing ? "Update" : t("save")}
           </button>
           {editing && (
             <button type="button" onClick={() => {
@@ -197,7 +199,7 @@ export default function NewsPage() {
                 return [];
               });
             }}
-              className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition">Batal</button>
+              className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition">{t("cancel")}</button>
           )}
           </div>
         </div>
@@ -222,8 +224,8 @@ export default function NewsPage() {
               <p className="text-gray-500 text-xs mt-1">{new Date(n.createdAt).toLocaleDateString("id-ID")}</p>
             </div>
             <div className="flex gap-2 flex-shrink-0">
-              <button onClick={() => handleEdit(n)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">Edit</button>
-              <button onClick={() => setDeleteId(n.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">Hapus</button>
+              <button onClick={() => handleEdit(n)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">{t("edit")}</button>
+              <button onClick={() => setDeleteId(n.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">{t("delete")}</button>
             </div>
           </div>
         ))}
@@ -234,8 +236,8 @@ export default function NewsPage() {
         open={!!deleteId}
         title="Hapus Berita"
         message="Yakin ingin menghapus berita ini?"
-        confirmText="Hapus"
-        cancelText="Batal"
+        confirmText={t("delete")}
+        cancelText={t("cancel")}
         onConfirm={() => deleteId && handleDelete(deleteId)}
         onCancel={() => setDeleteId(null)}
       />

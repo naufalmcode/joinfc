@@ -20,6 +20,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       number: Number(body.number),
       size: body.size || "L",
       jerseyType: body.jerseyType || "player",
+      itemType: body.itemType || "set",
+      shirtSize: body.shirtSize || "",
     });
     return successResponse(reg, 201);
   } catch (err: unknown) {

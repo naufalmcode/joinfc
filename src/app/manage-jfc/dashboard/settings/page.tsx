@@ -6,9 +6,11 @@ import ConfirmModal from "@/components/ConfirmModal";
 import UploadProgressBar from "@/components/UploadProgressBar";
 import { uploadFile, type UploadProgress } from "@/lib/upload";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function SettingsPage() {
   const { primary } = useAdminTheme();
+  const { t } = useI18n();
   const [settings, setSettings] = useState({
     siteName: "",
     description: "",
@@ -99,7 +101,7 @@ export default function SettingsPage() {
     });
     const data = await res.json();
     if (data.success) {
-      setMsg("Berhasil disimpan!");
+      setMsg(t("savedSuccess"));
       setSettings(updated);
       setPendingLogo(null);
       setPendingHero(null);
@@ -127,14 +129,14 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8">Pengaturan Website</h1>
+      <h1 className="text-3xl font-bold text-white mb-8">{t("websiteSettings")}</h1>
       <form onSubmit={handleSave} className="max-w-2xl space-y-6">
         {/* General Info */}
         <div className="bg-gray-800 rounded-xl p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Informasi Umum</h2>
+          <h2 className="text-lg font-semibold text-white">{t("generalInfo")}</h2>
 
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Nama Situs</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("siteName")}</label>
             <input
               value={settings.siteName}
               onChange={(e) => setSettings((s) => ({ ...s, siteName: e.target.value }))}
@@ -143,7 +145,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Deskripsi</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("description")}</label>
             <textarea
               value={settings.description}
               onChange={(e) => setSettings((s) => ({ ...s, description: e.target.value }))}
@@ -153,7 +155,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Logo</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("logo")}</label>
             <p className="text-gray-500 text-xs mb-2">Rekomendasi: 200 × 200 px (rasio 1:1, format PNG transparan)</p>
             <div className="flex items-center gap-4">
               {(pendingLogo ? logoPreview : settings.logoUrl) && (
@@ -161,7 +163,7 @@ export default function SettingsPage() {
               )}
               <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                Pilih File
+                {t("chooseFile")}
                 <input type="file" accept="image/*" onChange={(e) => handleFileSelect(e, "logoUrl")} className="hidden" />
               </label>
             </div>
@@ -170,9 +172,9 @@ export default function SettingsPage() {
 
         {/* Social Media */}
         <div className="bg-gray-800 rounded-xl p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Sosial Media</h2>
+          <h2 className="text-lg font-semibold text-white">{t("socialMedia")}</h2>
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Link Instagram</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("instagramLink")}</label>
             <div className="flex items-center gap-2">
               <span className="text-pink-500 text-xl">📷</span>
               <input
@@ -184,7 +186,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Link WhatsApp</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("whatsappLink")}</label>
             <div className="flex items-center gap-2">
               <span className="text-green-500 text-xl">💬</span>
               <input
@@ -199,31 +201,31 @@ export default function SettingsPage() {
 
         {/* Hero Background */}
         <div className="bg-gray-800 rounded-xl p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Background Header</h2>
+          <h2 className="text-lg font-semibold text-white">{t("heroBackground")}</h2>
           <div className="flex flex-wrap gap-4">
             <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${settings.heroType === "gradient" ? "bg-gray-700" : "border-gray-600 bg-gray-700/50"}`}
               style={settings.heroType === "gradient" ? { borderColor: primary } : undefined}>
               <input type="radio" name="heroType" value="gradient" checked={settings.heroType === "gradient"}
                 onChange={() => setSettings((s) => ({ ...s, heroType: "gradient" }))} className="hidden" />
               <span className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-green-500" />
-              <span className="text-white text-sm">Gradient Warna</span>
+              <span className="text-white text-sm">{t("heroGradient")}</span>
             </label>
             <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${settings.heroType === "image" ? "bg-gray-700" : "border-gray-600 bg-gray-700/50"}`}
               style={settings.heroType === "image" ? { borderColor: primary } : undefined}>
               <input type="radio" name="heroType" value="image" checked={settings.heroType === "image"}
                 onChange={() => setSettings((s) => ({ ...s, heroType: "image" }))} className="hidden" />
               <span className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-xs">🖼</span>
-              <span className="text-white text-sm">Gambar</span>
+              <span className="text-white text-sm">{t("heroImage")}</span>
             </label>
           </div>
 
           {settings.heroType === "image" && (
             <div>
-              <label className="block text-gray-300 text-sm mb-2">Upload Gambar Header</label>
+              <label className="block text-gray-300 text-sm mb-2">{t("uploadHeroImage")}</label>
               <p className="text-gray-500 text-xs mb-2">Rekomendasi: 1920 × 600 px (rasio 16:5, landscape)</p>
               <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                Pilih File
+                {t("chooseFile")}
                 <input type="file" accept="image/*" onChange={(e) => handleFileSelect(e, "heroImageUrl")} className="hidden" />
               </label>
               {(pendingHero ? heroPreview : settings.heroImageUrl) && (
@@ -235,10 +237,10 @@ export default function SettingsPage() {
 
         {/* Theme Colors */}
         <div className="bg-gray-800 rounded-xl p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Warna Tema</h2>
+          <h2 className="text-lg font-semibold text-white">{t("themeColors")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-gray-300 text-sm mb-1">Primary</label>
+              <label className="block text-gray-300 text-sm mb-1">{t("primary")}</label>
               <div className="flex items-center gap-2">
                 <input type="color" value={settings.primaryColor}
                   onChange={(e) => setSettings((s) => ({ ...s, primaryColor: e.target.value }))}
@@ -247,7 +249,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <div>
-              <label className="block text-gray-300 text-sm mb-1">Secondary</label>
+              <label className="block text-gray-300 text-sm mb-1">{t("secondary")}</label>
               <div className="flex items-center gap-2">
                 <input type="color" value={settings.secondaryColor}
                   onChange={(e) => setSettings((s) => ({ ...s, secondaryColor: e.target.value }))}
@@ -256,7 +258,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <div>
-              <label className="block text-gray-300 text-sm mb-1">Accent</label>
+              <label className="block text-gray-300 text-sm mb-1">{t("accent")}</label>
               <div className="flex items-center gap-2">
                 <input type="color" value={settings.accentColor}
                   onChange={(e) => setSettings((s) => ({ ...s, accentColor: e.target.value }))}
@@ -284,7 +286,7 @@ export default function SettingsPage() {
 
         <button type="submit" disabled={saving}
           className="px-6 py-3 admin-btn-primary rounded-lg font-semibold transition disabled:opacity-50">
-          {saving ? "Uploading & Menyimpan..." : "Simpan Pengaturan"}
+          {saving ? t("saving") : t("saveSettings")}
         </button>
       </form>
 

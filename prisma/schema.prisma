@@ -107,6 +107,7 @@ model JerseyRegistration {
   phone          String
   number         Int
   size           String       @default("L")
+  shirtSize      String       @default("")
   jerseyType     String       @default("player")
   itemType       String       @default("set")
   totalPrice     Int          @default(0)

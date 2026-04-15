@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
+import { useI18n } from "@/lib/i18n";
 import ConfirmModal from "@/components/ConfirmModal";
 import UploadProgressBar from "@/components/UploadProgressBar";
 import { uploadFile, uploadFiles as uploadFilesUtil, type UploadProgress } from "@/lib/upload";
@@ -67,6 +68,7 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (val: st
 
 export default function HighlightsPage() {
   const { primary } = useAdminTheme();
+  const { t } = useI18n();
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [form, setForm] = useState({ title: "", description: "", imageUrl: "" });
   const [pendingImages, setPendingImages] = useState<{ file: File; previewUrl: string }[]>([]);
@@ -193,16 +195,16 @@ export default function HighlightsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8">Galeri Aktivitas</h1>
+      <h1 className="text-3xl font-bold text-white mb-8">{t("highlights")}</h1>
 
       <form onSubmit={handleSubmit} className="bg-gray-800 rounded-xl p-6 mb-8 space-y-4 max-w-2xl">
         <h2 className="text-lg font-semibold text-white">
-          {editing ? "Edit Foto" : "Tambah Foto Aktivitas"}
+          {editing ? t("editHighlight") : t("addHighlight")}
         </h2>
         <input
           value={form.title}
           onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          placeholder="Keterangan foto"
+          placeholder={t("caption")}
           className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 admin-input"
           required
         />
@@ -219,7 +221,7 @@ export default function HighlightsPage() {
           <div className="flex items-center gap-2">
             <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              Pilih Foto
+              {t("chooseFile")}
               <input type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
             </label>
           </div>
@@ -258,7 +260,7 @@ export default function HighlightsPage() {
           <div className="flex gap-2">
           <button type="submit" disabled={loading}
             className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
-            {loading ? "Uploading & Saving..." : editing ? "Update" : "Tambah"}
+            {loading ? "Uploading & Saving..." : editing ? "Update" : t("save")}
           </button>
           {editing && (
             <button type="button" onClick={() => {
@@ -269,7 +271,7 @@ export default function HighlightsPage() {
                 return [];
               });
             }}
-              className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition">Batal</button>
+              className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition">{t("cancel")}</button>
           )}
           </div>
         </div>
@@ -287,8 +289,8 @@ export default function HighlightsPage() {
               <p className="text-white text-sm font-medium truncate">{h.title}</p>
             </div>
             <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
-              <button onClick={() => handleEdit(h)} className="p-1.5 bg-blue-600 text-white rounded text-xs">Edit</button>
-              <button onClick={() => setDeleteId(h.id)} className="p-1.5 bg-red-600 text-white rounded text-xs">Hapus</button>
+              <button onClick={() => handleEdit(h)} className="p-1.5 bg-blue-600 text-white rounded text-xs">{t("edit")}</button>
+              <button onClick={() => setDeleteId(h.id)} className="p-1.5 bg-red-600 text-white rounded text-xs">{t("delete")}</button>
             </div>
           </div>
         ))}
@@ -299,8 +301,8 @@ export default function HighlightsPage() {
         open={!!deleteId}
         title="Hapus Foto"
         message="Yakin ingin menghapus foto ini?"
-        confirmText="Hapus"
-        cancelText="Batal"
+        confirmText={t("delete")}
+        cancelText={t("cancel")}
         onConfirm={() => deleteId && handleDelete(deleteId)}
         onCancel={() => setDeleteId(null)}
       />

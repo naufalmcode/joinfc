@@ -70,7 +70,7 @@ export default function VotePage({ params }: { params: Promise<{ id: string }> }
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white text-xl mb-4">Vote tidak ditemukan</p>
+          <p className="text-white text-xl mb-4">{t("voteNotFound")}</p>
           <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:opacity-90" style={{ backgroundColor: primary }}>{t("backToHome")}</Link>
         </div>
       </div>

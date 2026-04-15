@@ -27,6 +27,8 @@ Klik tombol bahasa di pojok kanan atas (dengan ikon bendera SVG):
 - ID = Bahasa Indonesia (default)
 - EN = English
 
+> Bahasa berlaku untuk seluruh halaman publik **dan admin**. Semua label, judul, dan tombol akan berubah sesuai bahasa yang dipilih.
+
 ### Mendaftar Event
 1. Di halaman utama, klik **"Daftar Sekarang"** pada event yang diinginkan
 2. Isi form:
@@ -47,12 +49,14 @@ Klik tombol bahasa di pojok kanan atas (dengan ikon bendera SVG):
 4. Pilih tipe item (jika tersedia): **1 Stel** / **Baju Saja** / **Celana Saja**
 5. Isi form:
    - **Nama Pendaftar** (nama lengkap pemesan)
-   - **Nama Jersey** (yang akan dicetak di jersey)
+   - **Nama Jersey** (otomatis huruf kapital saat diketik)
    - **Nomor Telepon**
    - **Ukuran** (S / M / L / XL / XXL / 3XL / 4XL / 5XL / 6XL)
 6. Harga ditampilkan otomatis berdasarkan ukuran dan tipe item yang dipilih
 7. Klik **"Pesan Jersey #(nomor)"
 **
+
+> **Galeri desain jersey** bisa di-scroll otomatis (berganti setiap 3 detik) atau manual. Klik gambar untuk melihat ukuran penuh.
 
 ### Voting
 1. Di halaman utama, klik salah satu opsi pada voting yang sedang buka

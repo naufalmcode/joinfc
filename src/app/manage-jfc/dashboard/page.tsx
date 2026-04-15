@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
+import { useI18n } from "@/lib/i18n";
 
 export default function DashboardPage() {
   const { primary, secondary, accent } = useAdminTheme();
+  const { t } = useI18n();
   const [stats, setStats] = useState({ events: 0, jerseys: 0, highlights: 0 });
 
   useEffect(() => {
@@ -30,11 +32,11 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8">Dashboard</h1>
+      <h1 className="text-3xl font-bold text-white mb-8">{t("dashboard")}</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Open Events" value={stats.events} icon="⚽" color={primary} />
-        <StatCard title="Jersey Launches" value={stats.jerseys} icon="👕" color={secondary} />
-        <StatCard title="Gallery Photos" value={stats.highlights} icon="📷" color={accent} />
+        <StatCard title={t("openEvents")} value={stats.events} icon="⚽" color={primary} />
+        <StatCard title={t("jerseyLaunch")} value={stats.jerseys} icon="👕" color={secondary} />
+        <StatCard title={t("highlights")} value={stats.highlights} icon="📷" color={accent} />
       </div>
 
       <div className="mt-8 bg-gray-800 rounded-xl p-6">

@@ -37,6 +37,9 @@ export class ReportService implements IReportService {
       "Nama Jersey": r.name,
       "Nomor Jersey": r.number,
       Ukuran: r.size,
+      "Ukuran Baju": r.shirtSize || "-",
+      Item: r.itemType,
+      Harga: r.totalPrice,
       "Tanggal Daftar": new Date(r.createdAt).toLocaleDateString("id-ID"),
     }));
 

@@ -66,7 +66,7 @@ export interface IJerseyService {
   create(data: { title: string; designUrls?: string[]; basePrice?: number; shirtOnlyPrice?: number | null; shortsOnlyPrice?: number | null; sizeSurcharges?: string }): Promise<JerseyLaunch>;
   update(id: string, data: Partial<JerseyLaunch>): Promise<JerseyLaunch>;
   delete(id: string): Promise<void>;
-  register(launchId: string, data: { name: string; phone: string; number: number; size: string; jerseyType?: string; itemType?: string }): Promise<JerseyRegistration>;
+  register(launchId: string, data: { name: string; phone: string; number: number; size: string; jerseyType?: string; itemType?: string; shirtSize?: string }): Promise<JerseyRegistration>;
   getTakenNumbers(launchId: string): Promise<number[]>;
   removeRegistration(id: string): Promise<void>;
 }

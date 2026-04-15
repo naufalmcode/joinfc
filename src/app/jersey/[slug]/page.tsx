@@ -9,6 +9,7 @@ interface JerseyReg {
   name: string;
   number: number;
   size: string;
+  shirtSize: string;
   jerseyType: string;
   itemType: string;
   totalPrice: number;
@@ -29,15 +30,33 @@ interface JerseyDetail {
 
 const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
 
+type SurchargeEntry = {
+  target?: "base" | "shirt";
+  size?: string;
+  itemType?: string;
+  shirtSize?: string;
+  surcharge?: number;
+  price?: number;
+};
+
 function formatRupiah(amount: number): string {
   return "Rp " + amount.toLocaleString("id-ID");
+}
+
+function parseSurchargeList(raw: string): SurchargeEntry[] {
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 export default function JerseyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { t } = useI18n();
   const [jersey, setJersey] = useState<JerseyDetail | null>(null);
-  const [form, setForm] = useState({ registrantName: "", name: "", phone: "", number: 0, size: "L", jerseyType: "player", itemType: "set" });
+  const [form, setForm] = useState({ registrantName: "", name: "", phone: "", number: 0, size: "L", shirtSize: "", jerseyType: "player", itemType: "set" });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
@@ -74,6 +93,15 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
   const prevSlide = useCallback(() => setCurrentSlide((s) => (s - 1 + images.length) % images.length), [images.length]);
   const nextSlide = useCallback(() => setCurrentSlide((s) => (s + 1) % images.length), [images.length]);
 
+  // Auto-slide every 3 seconds (pause when lightbox open)
+  useEffect(() => {
+    if (images.length <= 1 || lightboxOpen) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((s) => (s + 1) % images.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [images.length, lightboxOpen]);
+
   // Keyboard navigation for lightbox
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -91,18 +119,20 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
     if (!jersey) return 0;
     const itemType = form.itemType || "set";
     let price = jersey.basePrice || 0;
-    try {
-      const surchargeList = JSON.parse(jersey.sizeSurcharges || "[]");
-      if (Array.isArray(surchargeList)) {
-        const exact = surchargeList.find((p: { size: string; itemType?: string; surcharge?: number; price?: number }) => p.size === form.size && (p.itemType || "set") === itemType);
-        if (exact) {
-          price += (exact.surcharge ?? exact.price ?? 0);
-        } else {
-          const bySize = surchargeList.find((p: { size: string; surcharge?: number; price?: number }) => p.size === form.size);
-          if (bySize) price += (bySize.surcharge ?? bySize.price ?? 0);
-        }
-      }
-    } catch { /* ignore */ }
+    const surchargeList = parseSurchargeList(jersey.sizeSurcharges || "[]");
+    const baseRules = surchargeList.filter((entry) => entry.target !== "shirt");
+    const exact = baseRules.find((entry) => entry.size === form.size && (entry.itemType || "set") === itemType);
+    if (exact) {
+      price += (exact.surcharge ?? exact.price ?? 0);
+    } else {
+      const bySize = baseRules.find((entry) => entry.size === form.size);
+      if (bySize) price += (bySize.surcharge ?? bySize.price ?? 0);
+    }
+
+    if (itemType === "set" && form.shirtSize && form.shirtSize !== form.size) {
+      const shirtRule = surchargeList.find((entry) => entry.target === "shirt" && (entry.shirtSize || entry.size) === form.shirtSize);
+      if (shirtRule) price += (shirtRule.surcharge ?? shirtRule.price ?? 0);
+    }
     return price;
   }
 
@@ -110,13 +140,24 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
   function getAvailableItemTypes(): string[] {
     if (!jersey) return ["set"];
     const types = new Set<string>(["set"]);
-    try {
-      const surchargeList = JSON.parse(jersey.sizeSurcharges || "[]");
-      if (Array.isArray(surchargeList)) {
-        surchargeList.forEach((p: { itemType?: string }) => { if (p.itemType) types.add(p.itemType); });
-      }
-    } catch { /* ignore */ }
+    parseSurchargeList(jersey.sizeSurcharges || "[]")
+      .filter((entry) => entry.target !== "shirt")
+      .forEach((entry) => {
+        if (entry.itemType) types.add(entry.itemType);
+      });
     return Array.from(types);
+  }
+
+  function getAvailableCustomShirtSizes(): string[] {
+    if (!jersey) return [];
+    const sizes = new Set<string>();
+    parseSurchargeList(jersey.sizeSurcharges || "[]")
+      .filter((entry) => entry.target === "shirt")
+      .forEach((entry) => {
+        const value = entry.shirtSize || entry.size;
+        if (value) sizes.add(value);
+      });
+    return SIZES.filter((size) => sizes.has(size));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -132,16 +173,19 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
     const res = await fetch(`/api/jerseys/${jersey!.id}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        ...form,
+        shirtSize: form.itemType === "set" ? form.shirtSize : "",
+      }),
     });
     const data = await res.json();
 
     if (data.success) {
       setResult(`Jersey #${form.number} (${form.size}) — ${form.name} ✓`);
-      setForm({ registrantName: "", name: "", phone: "", number: 0, size: "L", jerseyType: "player", itemType: "set" });
+      setForm({ registrantName: "", name: "", phone: "", number: 0, size: "L", shirtSize: "", jerseyType: "player", itemType: "set" });
       loadJersey();
     } else {
-      setError(data.error || "Failed");
+      setError(data.error || t("registrationFailed"));
     }
     setLoading(false);
   }
@@ -168,6 +212,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
   const takenNumbers = Object.keys(takenMap).map(Number);
   const hasPrice = jersey.basePrice > 0;
   const availableItemTypes = getAvailableItemTypes();
+  const availableCustomShirtSizes = getAvailableCustomShirtSizes();
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -220,11 +265,17 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   </div>
                 </>
               )}
-              {images.length > 1 && (
-                <div className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                  {currentSlide + 1} / {images.length}
-                </div>
-              )}
+              <div className="absolute top-3 right-3 flex items-center gap-2">
+                {images.length > 1 && (
+                  <span className="bg-black/50 text-white text-xs px-2 py-1 rounded">
+                    {currentSlide + 1} / {images.length}
+                  </span>
+                )}
+              </div>
+              <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-0.5 rounded flex items-center gap-1 cursor-pointer" onClick={() => setLightboxOpen(true)}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                {t("clickToView")}
+              </div>
             </div>
           )}
           <div className="p-6 md:p-8">
@@ -298,9 +349,9 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                 <label className="block text-gray-300 text-sm mb-1">{t("nameForJersey")}</label>
                 <input
                   value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value.toUpperCase() }))}
                   placeholder={t("namePrintPlaceholder")}
-                  className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none"
+                  className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none uppercase"
                   required
                 />
               </div>
@@ -362,7 +413,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                     {availableItemTypes.includes("shirt") && (
                       <button
                         type="button"
-                        onClick={() => setForm((f) => ({ ...f, itemType: "shirt" }))}
+                        onClick={() => setForm((f) => ({ ...f, itemType: "shirt", shirtSize: "" }))}
                         className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${
                           form.itemType === "shirt"
                             ? "bg-green-600/20 border-green-500 text-green-400"
@@ -375,7 +426,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                     {availableItemTypes.includes("shorts") && (
                       <button
                         type="button"
-                        onClick={() => setForm((f) => ({ ...f, itemType: "shorts" }))}
+                        onClick={() => setForm((f) => ({ ...f, itemType: "shorts", shirtSize: "" }))}
                         className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${
                           form.itemType === "shorts"
                             ? "bg-green-600/20 border-green-500 text-green-400"
@@ -406,7 +457,10 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   <label className="block text-gray-300 text-sm mb-1">{t("size")}</label>
                   <select
                     value={form.size}
-                    onChange={(e) => setForm((f) => ({ ...f, size: e.target.value }))}
+                    onChange={(e) => {
+                      const newSize = e.target.value;
+                      setForm((f) => ({ ...f, size: newSize, shirtSize: f.shirtSize === newSize ? "" : f.shirtSize }));
+                    }}
                     className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none"
                   >
                     {SIZES.map((s) => (
@@ -415,9 +469,31 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   </select>
                 </div>
               </div>
+              {hasPrice && form.itemType === "set" && availableCustomShirtSizes.length > 0 && (
+                <div>
+                  <label className="block text-gray-300 text-sm mb-1">{t("customShirtSizeLabel")}</label>
+                  <select
+                    value={form.shirtSize}
+                    onChange={(e) => setForm((f) => ({ ...f, shirtSize: e.target.value }))}
+                    className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none"
+                  >
+                    <option value="">{`${t("sameAsMainSize")} (${form.size})`}</option>
+                    {availableCustomShirtSizes.map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                  <p className="text-gray-500 text-xs mt-1">{t("customShirtSizeHint")}</p>
+                </div>
+              )}
               {/* Price Summary */}
               {hasPrice && (
                 <div className="p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+                  {form.itemType === "set" && form.shirtSize && form.shirtSize !== form.size && (
+                    <div className="flex justify-between text-sm text-gray-300 mb-2">
+                      <span>{t("customShirtSizeLabel")}</span>
+                      <span>{form.shirtSize}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-lg font-bold text-green-400">
                     <span>{t("totalPriceLabel")}</span>
                     <span>{formatRupiah(getCalculatedPrice())}</span>
@@ -449,7 +525,11 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   <span className="w-10 h-10 flex items-center justify-center bg-green-600 text-white rounded font-mono font-bold">{r.number}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium">{r.name}</p>
-                    <p className="text-gray-500 text-xs">{t("size")}: {r.size}{r.itemType && r.itemType !== "set" ? ` · ${r.itemType === "shirt" ? t("itemTypeShirt") : t("itemTypeShorts")}` : ""}</p>
+                    <p className="text-gray-500 text-xs">
+                      {t("size")}: {r.size}
+                      {r.shirtSize ? ` · ${t("customShirtSizeLabel")}: ${r.shirtSize}` : ""}
+                      {r.itemType && r.itemType !== "set" ? ` · ${r.itemType === "shirt" ? t("itemTypeShirt") : t("itemTypeShorts")}` : ""}
+                    </p>
                   </div>
                   {hasPrice && r.totalPrice > 0 && (
                     <span className="text-green-400 text-sm font-semibold whitespace-nowrap">{formatRupiah(r.totalPrice)}</span>

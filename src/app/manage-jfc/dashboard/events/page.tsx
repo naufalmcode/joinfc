@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { useAdminTheme } from "@/lib/admin-theme";
 import ConfirmModal from "@/components/ConfirmModal";
+import { useI18n } from "@/lib/i18n";
 
 interface EventReg {
   id: string;
@@ -31,6 +32,7 @@ interface EventItem {
 
 export default function EventsPage() {
   const { primary } = useAdminTheme();
+  const { t } = useI18n();
   const [events, setEvents] = useState<EventItem[]>([]);
   const [form, setForm] = useState({
     title: "", description: "", location: "", locationUrl: "", eventDate: "",
@@ -155,52 +157,52 @@ export default function EventsPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-gray-800 rounded-xl p-6 mb-8 space-y-4 max-w-2xl">
-        <h2 className="text-lg font-semibold text-white">{editing ? "Edit Event" : "Buat Event Baru"}</h2>
+        <h2 className="text-lg font-semibold text-white">{editing ? t("editEvent") : t("createEvent")}</h2>
         <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          placeholder="Judul Event" className={ic} required />
+          placeholder={t("eventTitle")} className={ic} required />
         <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-          placeholder="Deskripsi (opsional)" rows={2} className={ic} />
+          placeholder={t("descOptional")} rows={2} className={ic} />
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Lokasi</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("location")}</label>
             <input value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
               placeholder="Lapangan ABC" className={ic} required />
           </div>
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Tanggal & Waktu</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("dateTime")}</label>
             <input type="datetime-local" value={form.eventDate} onChange={(e) => setForm((f) => ({ ...f, eventDate: e.target.value }))}
               className={ic} required />
           </div>
         </div>
         <div>
-          <label className="block text-gray-300 text-sm mb-1">Link Lokasi (Google Maps)</label>
+          <label className="block text-gray-300 text-sm mb-1">{t("locationLinkLabel")}</label>
           <input value={form.locationUrl} onChange={(e) => setForm((f) => ({ ...f, locationUrl: e.target.value }))}
-            placeholder="https://maps.google.com/..." className={ic} />
+            placeholder={t("locationLinkPlaceholder")} className={ic} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Nomor Rekening</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("bankAccount")}</label>
             <input value={form.bankAccount} onChange={(e) => setForm((f) => ({ ...f, bankAccount: e.target.value }))}
               placeholder="BCA 123456789 a/n John" className={ic} required />
           </div>
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Maks Pemain</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("maxPlayers")}</label>
             <input type="number" min={1} value={form.maxPlayers} onChange={(e) => setForm((f) => ({ ...f, maxPlayers: Number(e.target.value) }))}
               className={ic} required />
           </div>
           <div>
-            <label className="block text-gray-300 text-sm mb-1">Maks Kiper</label>
+            <label className="block text-gray-300 text-sm mb-1">{t("maxGoalkeepers")}</label>
             <input type="number" min={0} value={form.maxGoalkeepers} onChange={(e) => setForm((f) => ({ ...f, maxGoalkeepers: Number(e.target.value) }))}
               className={ic} required />
           </div>
         </div>
         <div className="flex gap-2">
           <button type="submit" disabled={loading} className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
-            {loading ? "Saving..." : editing ? "Update" : "Buat Event"}
+            {loading ? t("loading") : t("save")}
           </button>
           {editing && (
             <button type="button" onClick={() => { setEditing(null); setForm({ title: "", description: "", location: "", locationUrl: "", eventDate: "", bankAccount: "", maxPlayers: 22, maxGoalkeepers: 3 }); }}
-              className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition">Batal</button>
+              className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition">{t("cancel")}</button>
           )}
         </div>
       </form>
@@ -249,14 +251,14 @@ export default function EventsPage() {
                     style={ev.status !== "open" ? { backgroundColor: primary } : undefined}>
                     {ev.status === "open" ? "Close" : "Open"}
                   </button>
-                  <button onClick={() => handleEdit(ev)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">Edit</button>
-                  <button onClick={() => setDeleteId(ev.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">Hapus</button>
+                  <button onClick={() => handleEdit(ev)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">{t("editEvent")}</button>
+                  <button onClick={() => setDeleteId(ev.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">{t("delete")}</button>
                 </div>
               </div>
 
               {viewEvent?.id === ev.id && (
                 <div className="mt-4 border-t border-gray-700 pt-4">
-                  <h4 className="text-white font-semibold mb-2">Daftar Peserta</h4>
+                  <h4 className="text-white font-semibold mb-2">{t("participants")}</h4>
                   {ev.registrations.length === 0 ? (
                     <p className="text-gray-500 text-sm">Belum ada yang daftar.</p>
                   ) : (
@@ -299,7 +301,7 @@ export default function EventsPage() {
                                   → {r.position === "player" ? "Kiper" : "Pemain"}
                                 </button>
                                 <button onClick={() => { setDeleteRegId(r.id); setDeleteRegEventId(ev.id); }}
-                                  className="px-2 py-0.5 bg-red-700 hover:bg-red-600 text-white rounded text-xs transition">Hapus</button>
+                                  className="px-2 py-0.5 bg-red-700 hover:bg-red-600 text-white rounded text-xs transition">{t("delete")}</button>
                               </div>
                             </td>
                           </tr>
@@ -320,8 +322,8 @@ export default function EventsPage() {
         open={!!deleteId}
         title="Hapus Event"
         message="Yakin ingin menghapus event ini beserta semua registrasi?"
-        confirmText="Hapus"
-        cancelText="Batal"
+        confirmText={t("delete")}
+        cancelText={t("cancel")}
         onConfirm={() => deleteId && handleDelete(deleteId)}
         onCancel={() => setDeleteId(null)}
       />
@@ -330,8 +332,8 @@ export default function EventsPage() {
         open={!!deleteRegId}
         title="Hapus Peserta"
         message="Yakin ingin menghapus peserta ini dari daftar?"
-        confirmText="Hapus"
-        cancelText="Batal"
+        confirmText={t("delete")}
+        cancelText={t("cancel")}
         onConfirm={() => deleteRegId && deleteReg(deleteRegId)}
         onCancel={() => { setDeleteRegId(null); setDeleteRegEventId(null); }}
       />

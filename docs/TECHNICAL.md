@@ -302,7 +302,9 @@ const events = await eventService.findAll();
 - Bahasa Indonesia (default) dan English
 - Toggle bahasa di pojok kanan atas (user) dan sidebar (admin)
 - Stored di localStorage key `jfc_lang`
-- ~240+ translation keys di `src/lib/i18n/translations.ts`
+- ~250+ translation keys di `src/lib/i18n/translations.ts`
+- **Halaman publik**: semua teks menggunakan `t()` (tidak ada hardcoded string)
+- **Halaman admin**: Dashboard, Settings, Events, Jersey, Highlights, News, Votes semua menggunakan `t()` untuk label, judul, dan tombol utama
 
 ### 2. Sistem Tema Warna
 - 3 warna tema: Primary, Secondary, Accent
@@ -335,11 +337,15 @@ const events = await eventService.findAll();
 ### 5. Jersey Launch
 - Grid nomor 1-99 dengan tooltip nama pemilik
 - Field "Nama Pendaftar" terpisah dari "Nama Jersey" (tercetak)
+- **Nama jersey otomatis uppercase** saat diketik di halaman publik
 - Ukuran: S/M/L/XL/XXL/3XL/4XL/5XL/6XL
 - Tipe jersey: Pemain atau Kiper (`jerseyType`)
 - Tipe item: 1 Stel / Baju Saja / Celana Saja (`itemType`)
 - **Harga**: `basePrice` + `surcharge` per ukuran+tipe. Surcharge disimpan sebagai JSON array di `sizeSurcharges`. Lookup: exact match size+itemType dulu, fallback ke size-only
 - Multi-image upload desain (`designUrls String[]`)
+- **Carousel auto-slide** setiap 3 detik (pause saat lightbox buka)
+- **Indikator slide** (dots + counter X/N) + hint "Klik untuk lihat penuh" saat hover
+- **Lightbox fullscreen** dengan navigasi keyboard (Escape, Arrow Left/Right)
 - Input harga di admin menggunakan format Rupiah otomatis (Rp + pemisah ribuan) via `formatNumber()`/`parseNumber()`
 - Harga di halaman publik dihitung otomatis berdasarkan pilihan ukuran dan tipe item
 

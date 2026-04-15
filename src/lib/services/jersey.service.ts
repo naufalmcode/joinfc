@@ -53,7 +53,7 @@ export class JerseyService implements IJerseyService {
 
   async register(
     launchId: string,
-    data: { registrantName?: string; name: string; phone: string; number: number; size: string; jerseyType: string; itemType?: string }
+    data: { registrantName?: string; name: string; phone: string; number: number; size: string; jerseyType: string; itemType?: string; shirtSize?: string }
   ): Promise<JerseyRegistration> {
     if (data.number < 1 || data.number > 99) {
       throw new Error("Number must be between 1 and 99");
@@ -69,18 +69,25 @@ export class JerseyService implements IJerseyService {
     }
 
     const itemType = data.itemType || "set";
+    const shirtSize = itemType === "set" && data.shirtSize && data.shirtSize !== data.size ? data.shirtSize : "";
     let totalPrice = launch.basePrice || 0;
     try {
       const surchargeList = JSON.parse(launch.sizeSurcharges || "[]");
       if (Array.isArray(surchargeList)) {
+        const baseRules = surchargeList.filter((p: { target?: string }) => p.target !== "shirt");
         // Find exact match: same size + same itemType
-        const exact = surchargeList.find((p: { size: string; itemType?: string; surcharge?: number; price?: number }) => p.size === data.size && (p.itemType || "set") === itemType);
+        const exact = baseRules.find((p: { size: string; itemType?: string; surcharge?: number; price?: number }) => p.size === data.size && (p.itemType || "set") === itemType);
         if (exact) {
           totalPrice += (exact.surcharge ?? exact.price ?? 0);
         } else {
           // Fallback: match by size only
-          const bySize = surchargeList.find((p: { size: string; surcharge?: number; price?: number }) => p.size === data.size);
+          const bySize = baseRules.find((p: { size: string; surcharge?: number; price?: number }) => p.size === data.size);
           if (bySize) totalPrice += (bySize.surcharge ?? bySize.price ?? 0);
+        }
+
+        if (shirtSize) {
+          const shirtRule = surchargeList.find((p: { target?: string; shirtSize?: string; size?: string; surcharge?: number; price?: number }) => p.target === "shirt" && (p.shirtSize || p.size) === shirtSize);
+          if (shirtRule) totalPrice += (shirtRule.surcharge ?? shirtRule.price ?? 0);
         }
       }
     } catch { /* ignore parse errors, use basePrice */ }
@@ -92,6 +99,7 @@ export class JerseyService implements IJerseyService {
       phone: data.phone,
       number: data.number,
       size: data.size,
+      shirtSize,
       jerseyType: data.jerseyType || "player",
       itemType,
       totalPrice,

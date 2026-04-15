@@ -266,7 +266,7 @@ export default function HomePage() {
                   )}
                   {monthEvents.length === 0 && (
                     <p className="mt-3 border-t border-gray-700 pt-3 text-xs text-gray-500 text-center">
-                      {locale === "id" ? "Tidak ada event bulan ini" : "No events this month"}
+                      {t("noEventsThisMonth")}
                     </p>
                   )}
                 </div>
@@ -276,7 +276,7 @@ export default function HomePage() {
             {events.length === 0 && (
               <div className="bg-gray-800 rounded-xl p-4">
                 <h3 className="text-lg font-bold mb-3 text-center" style={{ color: accent }}>{t("eventCalendar")}</h3>
-                <p className="text-xs text-gray-500 text-center">{locale === "id" ? "Belum ada event" : "No events yet"}</p>
+                <p className="text-xs text-gray-500 text-center">{t("noEventsYet")}</p>
               </div>
             )}
           </div>

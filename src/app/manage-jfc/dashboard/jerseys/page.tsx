@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAdminTheme } from "@/lib/admin-theme";
+import { useI18n } from "@/lib/i18n";
 import ConfirmModal from "@/components/ConfirmModal";
 import UploadProgressBar from "@/components/UploadProgressBar";
 import { uploadFiles, type UploadProgress } from "@/lib/upload";
@@ -13,6 +14,7 @@ interface JerseyReg {
   phone: string;
   number: number;
   size: string;
+  shirtSize: string;
   jerseyType: string;
   itemType: string;
   totalPrice: number;
@@ -34,6 +36,9 @@ interface JerseyItem {
 
 const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
 
+type BaseSurchargeRule = { size: string; itemType: string; surcharge: number };
+type ShirtSizeSurchargeRule = { shirtSize: string; surcharge: number };
+
 function formatRupiah(amount: number): string {
   return "Rp " + amount.toLocaleString("id-ID");
 }
@@ -49,8 +54,9 @@ function parseNumber(formatted: string): number {
 
 export default function JerseysPage() {
   const { primary } = useAdminTheme();
+  const { t } = useI18n();
   const [jerseys, setJerseys] = useState<JerseyItem[]>([]);
-  const [form, setForm] = useState({ title: "", designUrls: [] as string[], basePrice: 0, surchargeList: [] as { size: string; itemType: string; surcharge: number }[] });
+  const [form, setForm] = useState({ title: "", designUrls: [] as string[], basePrice: 0, surchargeList: [] as BaseSurchargeRule[], shirtSizeSurchargeList: [] as ShirtSizeSurchargeRule[] });
   const [editing, setEditing] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [viewJersey, setViewJersey] = useState<JerseyItem | null>(null);
@@ -115,7 +121,17 @@ export default function JerseysPage() {
     setUploadProgress(null);
     const allUrls = [...form.designUrls, ...uploadedUrls];
 
-    const payload = { title: form.title, designUrls: allUrls, basePrice: form.basePrice, shirtOnlyPrice: null, shortsOnlyPrice: null, sizeSurcharges: JSON.stringify(form.surchargeList) };
+    const payload = {
+      title: form.title,
+      designUrls: allUrls,
+      basePrice: form.basePrice,
+      shirtOnlyPrice: null,
+      shortsOnlyPrice: null,
+      sizeSurcharges: JSON.stringify([
+        ...form.surchargeList.map((item) => ({ ...item, target: "base" })),
+        ...form.shirtSizeSurchargeList.map((item) => ({ ...item, target: "shirt", itemType: "set" })),
+      ]),
+    };
     if (editing) {
       await fetch(`/api/jerseys/${editing}`, {
         method: "PUT",
@@ -130,7 +146,7 @@ export default function JerseysPage() {
       });
     }
 
-    setForm({ title: "", designUrls: [], basePrice: 0, surchargeList: [] });
+    setForm({ title: "", designUrls: [], basePrice: 0, surchargeList: [], shirtSizeSurchargeList: [] });
     setPendingImages((prev) => {
       prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
       return [];
@@ -162,18 +178,18 @@ export default function JerseysPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white mb-8">Jersey Launch</h1>
+      <h1 className="text-3xl font-bold text-white mb-8">{t("jerseyLaunch")}</h1>
 
       <form onSubmit={handleSubmit} className="bg-gray-800 rounded-xl p-6 mb-8 space-y-4 max-w-2xl">
-        <h2 className="text-lg font-semibold text-white">{editing ? "Edit Jersey" : "Launch Jersey Baru"}</h2>
+        <h2 className="text-lg font-semibold text-white">{editing ? `${t("edit")} Jersey` : t("launchNewJersey")}</h2>
         <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
           placeholder="Nama Jersey (contoh: Jersey Home 2024)" className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 admin-input" required />
         <div>
-          <label className="block text-gray-300 text-sm mb-1">Upload Desain Jersey</label>
+          <label className="block text-gray-300 text-sm mb-1">{t("uploadDesign")}</label>
           <p className="text-gray-500 text-xs mb-2">Rekomendasi: 800 × 800 px (rasio 1:1, bisa upload banyak)</p>
           <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            Pilih File
+            {t("chooseFile")}
             <input type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
           </label>
           {(form.designUrls.length > 0 || pendingImages.length > 0) && (
@@ -224,12 +240,7 @@ export default function JerseysPage() {
                     }} className="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 text-sm admin-input">
                       {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
-                    <select value={item.itemType} onChange={(e) => {
-                      setForm((f) => { const list = [...f.surchargeList]; list[idx] = { ...list[idx], itemType: e.target.value }; return { ...f, surchargeList: list }; });
-                    }} className="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 text-sm admin-input">
-                      <option value="set">1 Stel</option>
-                      <option value="shirt">Baju Saja</option>
-                    </select>
+                    <span className="px-3 py-2 text-gray-400 text-xs whitespace-nowrap">harga 1 stel</span>
                     <div className="flex-1">
                       <div className="relative w-full">
                         <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
@@ -239,6 +250,38 @@ export default function JerseysPage() {
                       </div>
                     </div>
                     <button type="button" onClick={() => setForm((f) => ({ ...f, surchargeList: f.surchargeList.filter((_, i) => i !== idx) }))}
+                      className="w-8 h-8 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded transition text-sm font-bold">✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="mt-4 border-t border-gray-700 pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-gray-300 text-sm font-medium">Tambahan Khusus Ukuran Baju (opsional)</label>
+              <button type="button" onClick={() => setForm((f) => ({ ...f, shirtSizeSurchargeList: [...f.shirtSizeSurchargeList, { shirtSize: "XXL", surcharge: 0 }] }))}
+                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition">+ Tambah</button>
+            </div>
+            {form.shirtSizeSurchargeList.length === 0 ? (
+              <p className="text-gray-500 text-sm">Belum ada tambahan ukuran baju khusus.</p>
+            ) : (
+              <div className="space-y-2">
+                {form.shirtSizeSurchargeList.map((item, idx) => (
+                  <div key={`shirt-${idx}`} className="flex items-center gap-2 bg-gray-700/50 p-2 rounded-lg">
+                    <select value={item.shirtSize} onChange={(e) => {
+                      setForm((f) => { const list = [...f.shirtSizeSurchargeList]; list[idx] = { ...list[idx], shirtSize: e.target.value }; return { ...f, shirtSizeSurchargeList: list }; });
+                    }} className="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 text-sm admin-input">
+                      {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                    <div className="flex-1">
+                      <div className="relative w-full">
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                        <input type="text" inputMode="numeric" value={formatNumber(item.surcharge)} onChange={(e) => {
+                          setForm((f) => { const list = [...f.shirtSizeSurchargeList]; list[idx] = { ...list[idx], surcharge: parseNumber(e.target.value) }; return { ...f, shirtSizeSurchargeList: list }; });
+                        }} placeholder="25.000" className="w-full pl-8 pr-3 py-2 bg-gray-700 text-white rounded border border-gray-600 text-sm admin-input" />
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => setForm((f) => ({ ...f, shirtSizeSurchargeList: f.shirtSizeSurchargeList.filter((_, i) => i !== idx) }))}
                       className="w-8 h-8 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded transition text-sm font-bold">✕</button>
                   </div>
                 ))}
@@ -260,14 +303,14 @@ export default function JerseysPage() {
             <button type="button"
               onClick={() => {
                 setEditing(null);
-                setForm({ title: "", designUrls: [], basePrice: 0, surchargeList: [] });
+                setForm({ title: "", designUrls: [], basePrice: 0, surchargeList: [], shirtSizeSurchargeList: [] });
                 setPendingImages((prev) => {
                   prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
                   return [];
                 });
               }}
               className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition"
-              >Batal</button>
+              >{t("cancel")}</button>
           )}
           </div>
         </div>
@@ -320,29 +363,40 @@ export default function JerseysPage() {
                 </button>
                 <button onClick={() => {
                   setEditing(j.id);
-                  let surchargeList: { size: string; itemType: string; surcharge: number }[] = [];
-                  try { const parsed = JSON.parse(j.sizeSurcharges || "[]"); surchargeList = Array.isArray(parsed) ? parsed.map((p: { size: string; itemType?: string; surcharge?: number; price?: number }) => ({ size: p.size, itemType: p.itemType || "set", surcharge: p.surcharge ?? p.price ?? 0 })) : []; } catch { /* ignore */ }
-                  setForm({ title: j.title, designUrls: j.designUrls ?? [], basePrice: j.basePrice || 0, surchargeList });
+                  let surchargeList: BaseSurchargeRule[] = [];
+                  let shirtSizeSurchargeList: ShirtSizeSurchargeRule[] = [];
+                  try {
+                    const parsed = JSON.parse(j.sizeSurcharges || "[]");
+                    if (Array.isArray(parsed)) {
+                      surchargeList = parsed
+                        .filter((p: { target?: string }) => p.target !== "shirt")
+                        .map((p: { size: string; itemType?: string; surcharge?: number; price?: number }) => ({ size: p.size, itemType: p.itemType || "set", surcharge: p.surcharge ?? p.price ?? 0 }));
+                      shirtSizeSurchargeList = parsed
+                        .filter((p: { target?: string }) => p.target === "shirt")
+                        .map((p: { shirtSize?: string; size?: string; surcharge?: number; price?: number }) => ({ shirtSize: p.shirtSize || p.size || "XXL", surcharge: p.surcharge ?? p.price ?? 0 }));
+                    }
+                  } catch { /* ignore */ }
+                  setForm({ title: j.title, designUrls: j.designUrls ?? [], basePrice: j.basePrice || 0, surchargeList, shirtSizeSurchargeList });
                   setPendingImages((prev) => {
                     prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
                     return [];
                   });
                 }}
-                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm">Edit</button>
-                <button onClick={() => setDeleteId(j.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">Hapus</button>
+                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm">{t("edit")}</button>
+                <button onClick={() => setDeleteId(j.id)} className="px-3 py-1 bg-red-600 text-white rounded text-sm">{t("delete")}</button>
               </div>
             </div>
 
             {viewJersey?.id === j.id && (
               <div className="mt-4 border-t border-gray-700 pt-4">
-                <h4 className="text-white font-semibold mb-2">Daftar Peserta</h4>
+                <h4 className="text-white font-semibold mb-2">{t("registrantList")}</h4>
                 {j.registrations.length === 0 ? (
-                  <p className="text-gray-500 text-sm">Belum ada yang daftar.</p>
+                  <p className="text-gray-500 text-sm">{t("noRegistrantsYet")}</p>
                 ) : (
                   <div className="overflow-x-auto -mx-6 px-6">
                   <table className="w-full text-sm min-w-[600px]">
                     <thead><tr className="text-gray-400 text-left">
-                      <th className="py-1">#</th><th>Pendaftar</th><th>Nama Jersey</th><th>Telepon</th><th>Nomor</th><th>Ukuran</th><th>Tipe</th><th>Item</th><th>Harga</th>
+                      <th className="py-1">#</th><th>Pendaftar</th><th>Nama Jersey</th><th>Telepon</th><th>Nomor</th><th>Ukuran</th><th>Ukuran Baju</th><th>Tipe</th><th>Item</th><th>Harga</th>
                     </tr></thead>
                     <tbody>
                       {j.registrations.map((r, i) => (
@@ -353,6 +407,7 @@ export default function JerseysPage() {
                           <td>{r.phone}</td>
                           <td><span className="bg-green-800 text-green-300 px-2 py-0.5 rounded font-mono">{r.number}</span></td>
                           <td>{r.size}</td>
+                          <td>{r.shirtSize || "-"}</td>
                           <td>
                             <span className={`px-2 py-0.5 rounded text-xs ${r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"}`}>
                               {r.jerseyType === "goalkeeper" ? "🧤 Kiper" : "⚽ Pemain"}

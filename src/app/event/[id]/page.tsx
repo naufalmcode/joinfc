@@ -78,7 +78,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       setForm({ name: "", phone: "", position: "player" });
       loadEvent();
     } else {
-      setError(data.error || "Gagal mendaftar");
+      setError(data.error || t("registrationFailed"));
     }
     setLoading(false);
   }

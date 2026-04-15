@@ -141,6 +141,9 @@ export const translations = {
     itemTypeSet: "1 Stel (Baju + Celana)",
     itemTypeShirt: "Baju Saja",
     itemTypeShorts: "Celana Saja",
+    customShirtSizeLabel: "Ukuran Baju Khusus",
+    sameAsMainSize: "Ikuti ukuran utama",
+    customShirtSizeHint: "Opsional jika ukuran baju berbeda dari ukuran utama.",
     priceLabel: "Harga",
     totalPriceLabel: "Total Harga",
     sizeSurcharge: "Tambahan ukuran",
@@ -196,6 +199,15 @@ export const translations = {
     noVotesYet: "Belum ada voting.",
     noOptionsYet: "Belum ada pilihan.",
     votingSection: "Voting",
+    deleteVoteTitle: "Hapus Vote",
+    deleteVoteMessage: "Yakin ingin menghapus vote ini? Semua data voting akan hilang.",
+
+    // Additional keys
+    clickToView: "Klik untuk lihat penuh",
+    registrationFailed: "Gagal mendaftar",
+    voteNotFound: "Vote tidak ditemukan",
+    noEventsThisMonth: "Tidak ada event bulan ini",
+    noEventsYet: "Belum ada event",
   },
   en: {
     loading: "Loading...",
@@ -329,6 +341,9 @@ export const translations = {
     itemTypeSet: "Full Set (Shirt + Shorts)",
     itemTypeShirt: "Shirt Only",
     itemTypeShorts: "Shorts Only",
+    customShirtSizeLabel: "Custom Shirt Size",
+    sameAsMainSize: "Follow main size",
+    customShirtSizeHint: "Optional if the shirt size differs from the main size.",
     priceLabel: "Price",
     totalPriceLabel: "Total Price",
     sizeSurcharge: "Size surcharge",
@@ -382,6 +397,15 @@ export const translations = {
     noVotesYet: "No votes yet.",
     noOptionsYet: "No options yet.",
     votingSection: "Voting",
+    deleteVoteTitle: "Delete Vote",
+    deleteVoteMessage: "Are you sure you want to delete this vote? All voting data will be lost.",
+
+    // Additional keys
+    clickToView: "Click to view full",
+    registrationFailed: "Registration failed",
+    voteNotFound: "Vote not found",
+    noEventsThisMonth: "No events this month",
+    noEventsYet: "No events yet",
   },
 } as const;
 
