@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+model SiteSettings {
+  id              String   @id @default("default")
+  siteName        String   @default("JOIN Football Community")
+  description     String   @default("Komunitas sepakbola JOIN FC")
+  logoUrl         String?
+  primaryColor    String   @default("#16a34a")
+  secondaryColor  String   @default("#065f46")
+  accentColor     String   @default("#fbbf24")
+  instagramUrl    String?
+  whatsappUrl     String?
+  heroType        String   @default("gradient")
+  heroImageUrl    String?
+  adminPassword   String   @default("admjoinfc2020")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model Highlight {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  imageUrl    String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("highlights")
+}
+
+model CalendarSchedule {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  eventDate   DateTime
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("calendar_schedules")
+}
+
+model Event {
+  id             String              @id @default(uuid())
+  title          String
+  description    String?
+  location       String
+  locationUrl    String?
+  eventDate      DateTime
+  bankAccount    String
+  maxPlayers     Int
+  maxGoalkeepers Int                 @default(3)
+  status         String              @default("open")
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  registrations  EventRegistration[]
+
+  @@map("events")
+}
+
+model EventRegistration {
+  id        String   @id @default(uuid())
+  eventId   String
+  name      String
+  phone     String
+  position  String   @default("player")
+  status    String   @default("confirmed")
+  createdAt DateTime @default(now())
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_registrations")
+}
+
+model JerseyLaunch {
+  id            String               @id @default(uuid())
+  title         String
+  designUrls    String[]             @default([])
+  slug          String               @unique
+  status        String               @default("open")
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  registrations JerseyRegistration[]
+
+  @@map("jersey_launches")
+}
+
+model JerseyRegistration {
+  id             String       @id @default(uuid())
+  jerseyLaunchId String
+  registrantName String       @default("")
+  name           String
+  phone          String
+  number         Int
+  size           String       @default("L")
+  createdAt      DateTime     @default(now())
+  jerseyLaunch   JerseyLaunch @relation(fields: [jerseyLaunchId], references: [id], onDelete: Cascade)
+
+  @@unique([jerseyLaunchId, number])
+  @@map("jersey_registrations")
+}
+
+model News {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  imageUrl  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("news")
+}
+
+model AdminSession {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("admin_sessions")
+}
+
+model Vote {
+  id        String       @id @default(uuid())
+  title     String
+  status    String       @default("open")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  options   VoteOption[]
+  responses VoteResponse[]
+
+  @@map("votes")
+}
+
+model VoteOption {
+  id        String         @id @default(uuid())
+  voteId    String
+  name      String
+  imageUrl  String?
+  sortOrder Int            @default(0)
+  vote      Vote           @relation(fields: [voteId], references: [id], onDelete: Cascade)
+  responses VoteResponse[]
+
+  @@map("vote_options")
+}
+
+model VoteResponse {
+  id        String     @id @default(uuid())
+  voteId    String
+  optionId  String
+  createdAt DateTime   @default(now())
+  vote      Vote       @relation(fields: [voteId], references: [id], onDelete: Cascade)
+  option    VoteOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@map("vote_responses")
+}

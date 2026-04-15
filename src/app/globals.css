@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: #111827;
+  color: #f3f4f6;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Admin theme utilities */
+.admin-input:focus {
+  border-color: var(--admin-primary, #16a34a) !important;
+  outline: none;
+}
+
+.admin-btn-primary {
+  background-color: var(--admin-primary, #16a34a);
+  color: white;
+}
+.admin-btn-primary:hover {
+  filter: brightness(0.85);
+}
+.admin-btn-primary:disabled {
+  opacity: 0.5;
+}
+
+/* Horizontal scroll carousel */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
