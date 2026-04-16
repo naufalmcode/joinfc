@@ -4,14 +4,10 @@ import { validateAdminSession } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/api-utils";
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
   const isAdmin = await validateAdminSession();
-  if (isAdmin) {
-    const { searchParams } = request.nextUrl;
-    if (searchParams.get("summary") === "1") {
-      const launches = await jerseyService.getAllSummary();
-      return successResponse(launches);
-    }
-    const launches = await jerseyService.getAll();
+  if (isAdmin && searchParams.get("summary") === "1") {
+    const launches = await jerseyService.getAllSummary();
     return successResponse(launches);
   }
   const launches = await jerseyService.getOpen();

@@ -219,6 +219,8 @@ export const translations = {
     statusClosed: "Tutup",
     openStatus: "Buka",
     closeStatus: "Tutup",
+    showPublic: "Tampil",
+    hidePublic: "Sembunyi",
     noImage: "Tanpa Gambar",
     addMore: "+ Tambah",
     name: "Nama",
@@ -254,7 +256,6 @@ export const translations = {
     deleteEventMessage: "Yakin ingin menghapus event ini beserta semua registrasi?",
     deleteParticipantTitle: "Hapus Peserta",
     deleteParticipantMessage: "Yakin ingin menghapus peserta ini dari daftar?",
-    statusRegistered: "Terdaftar",
 
     // Highlights admin
     descriptionOptional: "Deskripsi (opsional)",
@@ -304,6 +305,30 @@ export const translations = {
     passwordMinLength: "Password minimal 6 karakter!",
     passwordChanged: "Password berhasil diubah!",
     back: "Kembali",
+
+    // Payment status
+    paymentStatus: "Status Pembayaran",
+    statusRegistered: "Terdaftar",
+    statusDp: "DP",
+    statusPaid: "Lunas",
+    statusCancel: "Batal",
+    statusDropped: "Dropped",
+    statusProduction: "Produksi",
+    statusDone: "Selesai",
+    allStatus: "Semua Status",
+
+    // Edit registrant
+    editRegistrant: "Edit Peserta",
+    saveChanges: "Simpan Perubahan",
+    editSuccess: "Berhasil diupdate!",
+    editFailed: "Gagal mengupdate",
+
+    // Custom report
+    selectColumns: "Pilih Kolom",
+    generateReport: "Generate Report",
+    selectAtLeastOneColumn: "Pilih minimal 1 kolom",
+    dateCol: "Tanggal Daftar",
+    statusCol: "Status",
   },
   en: {
     loading: "Loading...",
@@ -513,6 +538,8 @@ export const translations = {
     statusClosed: "Closed",
     openStatus: "Open",
     closeStatus: "Close",
+    showPublic: "Visible",
+    hidePublic: "Hidden",
     noImage: "No Image",
     addMore: "+ Add",
     name: "Name",
@@ -548,7 +575,6 @@ export const translations = {
     deleteEventMessage: "Are you sure you want to delete this event and all registrations?",
     deleteParticipantTitle: "Delete Participant",
     deleteParticipantMessage: "Are you sure you want to remove this participant?",
-    statusRegistered: "Registered",
 
     // Highlights admin
     descriptionOptional: "Description (optional)",
@@ -598,6 +624,30 @@ export const translations = {
     passwordMinLength: "Password must be at least 6 characters!",
     passwordChanged: "Password changed successfully!",
     back: "Back",
+
+    // Payment status
+    paymentStatus: "Payment Status",
+    statusRegistered: "Registered",
+    statusDp: "Down Payment",
+    statusPaid: "Paid",
+    statusCancel: "Cancelled",
+    statusDropped: "Dropped",
+    statusProduction: "In Production",
+    statusDone: "Done",
+    allStatus: "All Status",
+
+    // Edit registrant
+    editRegistrant: "Edit Registrant",
+    saveChanges: "Save Changes",
+    editSuccess: "Updated successfully!",
+    editFailed: "Failed to update",
+
+    // Custom report
+    selectColumns: "Select Columns",
+    generateReport: "Generate Report",
+    selectAtLeastOneColumn: "Select at least 1 column",
+    dateCol: "Registered Date",
+    statusCol: "Status",
   },
 } as const;
 

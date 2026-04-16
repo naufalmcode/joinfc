@@ -54,9 +54,11 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">JOIN FC Admin</h2>
-          <LanguageToggle />
+        <div className="p-6 border-b border-gray-700">
+          <div className="mb-2">
+            <LanguageToggle />
+          </div>
+          <h2 className="text-xl font-bold text-white">{t("adminTitle")}</h2>
         </div>
         <nav className="p-4 space-y-1 overflow-y-auto" style={{ maxHeight: "calc(100vh - 140px)" }}>
           {navItems.map((item) => (

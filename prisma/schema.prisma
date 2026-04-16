@@ -95,6 +95,7 @@ model JerseyLaunch {
   designUrls      String[]             @default([])
   slug            String               @unique
   status          String               @default("open")
+  isVisible       Boolean              @default(true)
   basePrice       Int                  @default(0)
   shirtOnlyPrice  Int?
   shortsOnlyPrice Int?
@@ -120,10 +121,12 @@ model JerseyRegistration {
   jerseyType     String       @default("player")
   itemType       String       @default("set")
   totalPrice     Int          @default(0)
+  paymentStatus  String       @default("registered")
   createdAt      DateTime     @default(now())
   jerseyLaunch   JerseyLaunch @relation(fields: [jerseyLaunchId], references: [id], onDelete: Cascade)
 
   @@unique([jerseyLaunchId, number])
+  @@index([jerseyLaunchId, paymentStatus])
   @@map("jersey_registrations")
 }
 

@@ -18,7 +18,12 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
   const { id } = await params;
   const body = await request.json();
-  const launch = await jerseyService.update(id, body);
+  const allowed: Record<string, unknown> = {};
+  const allowedKeys = ["title", "designUrls", "status", "isVisible", "basePrice", "shirtOnlyPrice", "shortsOnlyPrice", "sizeSurcharges"];
+  for (const key of allowedKeys) {
+    if (key in body) allowed[key] = body[key];
+  }
+  const launch = await jerseyService.update(id, allowed);
   return successResponse(launch);
 }
 

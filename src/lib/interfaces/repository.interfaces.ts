@@ -81,6 +81,7 @@ export interface IJerseyRegistrationRepository {
   findByLaunchId(launchId: string): Promise<JerseyRegistration[]>;
   findTakenNumbers(launchId: string): Promise<number[]>;
   create(data: Omit<JerseyRegistration, "id" | "createdAt">): Promise<JerseyRegistration>;
+  update(id: string, data: Partial<JerseyRegistration>): Promise<JerseyRegistration>;
   delete(id: string): Promise<void>;
 }
 

@@ -24,7 +24,7 @@ export class JerseyLaunchRepository implements IJerseyLaunchRepository {
 
   async findOpen(): Promise<JerseyLaunchWithRegistrations[]> {
     return prisma.jerseyLaunch.findMany({
-      where: { status: "open" },
+      where: { status: "open", isVisible: true },
       include: { registrations: { orderBy: { number: "asc" } } },
       orderBy: { createdAt: "desc" },
     });
@@ -75,6 +75,10 @@ export class JerseyRegistrationRepository implements IJerseyRegistrationReposito
 
   async create(data: Omit<JerseyRegistration, "id" | "createdAt">): Promise<JerseyRegistration> {
     return prisma.jerseyRegistration.create({ data });
+  }
+
+  async update(id: string, data: Partial<JerseyRegistration>): Promise<JerseyRegistration> {
+    return prisma.jerseyRegistration.update({ where: { id }, data });
   }
 
   async delete(id: string): Promise<void> {

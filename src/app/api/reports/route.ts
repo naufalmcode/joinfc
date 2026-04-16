@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
       buffer = await reportService.generateEventReport(id);
       filename = `event-report-${id}.xlsx`;
     } else if (type === "jersey" && id) {
-      buffer = await reportService.generateJerseyReport(id);
+      const columns = searchParams.get("columns")?.split(",").filter(Boolean);
+      buffer = await reportService.generateJerseyReport(id, columns);
       filename = `jersey-report-${id}.xlsx`;
     } else if (type === "all-events") {
       buffer = await reportService.generateAllEventsReport();

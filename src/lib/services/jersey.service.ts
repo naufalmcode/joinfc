@@ -41,6 +41,7 @@ export class JerseyService implements IJerseyService {
       designUrls: data.designUrls ?? [],
       slug,
       status: "open",
+      isVisible: true,
       basePrice: data.basePrice ?? 0,
       shirtOnlyPrice: data.shirtOnlyPrice ?? null,
       shortsOnlyPrice: data.shortsOnlyPrice ?? null,
@@ -92,7 +93,16 @@ export class JerseyService implements IJerseyService {
 
         if (shirtSize) {
           const shirtRule = surchargeList.find((p: { target?: string; shirtSize?: string; size?: string; surcharge?: number; price?: number }) => p.target === "shirt" && (p.shirtSize || p.size) === shirtSize);
-          if (shirtRule) totalPrice += (shirtRule.surcharge ?? shirtRule.price ?? 0);
+          if (shirtRule) {
+            totalPrice += (shirtRule.surcharge ?? shirtRule.price ?? 0);
+          } else {
+            // Fallback: use base surcharge difference between shirt size and main size
+            const shirtBase = baseRules.find((p: { size: string }) => p.size === shirtSize);
+            const mainBase = exact || baseRules.find((p: { size: string }) => p.size === data.size);
+            const shirtSurcharge = shirtBase ? (shirtBase.surcharge ?? shirtBase.price ?? 0) : 0;
+            const mainSurcharge = mainBase ? (mainBase.surcharge ?? mainBase.price ?? 0) : 0;
+            if (shirtSurcharge > mainSurcharge) totalPrice += (shirtSurcharge - mainSurcharge);
+          }
         }
       }
     } catch { /* ignore parse errors, use basePrice */ }
@@ -108,11 +118,16 @@ export class JerseyService implements IJerseyService {
       jerseyType: data.jerseyType || "player",
       itemType,
       totalPrice,
+      paymentStatus: "registered",
     });
   }
 
   async getTakenNumbers(launchId: string): Promise<number[]> {
     return this.registrationRepo.findTakenNumbers(launchId);
+  }
+
+  async updateRegistration(id: string, data: Partial<JerseyRegistration>): Promise<JerseyRegistration> {
+    return this.registrationRepo.update(id, data);
   }
 
   async removeRegistration(id: string): Promise<void> {

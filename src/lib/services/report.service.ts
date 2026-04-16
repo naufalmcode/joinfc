@@ -27,21 +27,52 @@ export class ReportService implements IReportService {
     return Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
   }
 
-  async generateJerseyReport(launchId: string): Promise<Buffer> {
+  async generateJerseyReport(launchId: string, columns?: string[]): Promise<Buffer> {
     const launch = await this.jerseyRepo.findById(launchId);
     if (!launch) throw new Error("Jersey launch not found");
+    const regs = launch.registrations;
 
-    const data = launch.registrations.map((r, i) => ({
-      No: i + 1,
-      Pendaftar: r.registrantName || "-",
-      "Nama Jersey": r.name,
-      "Nomor Jersey": r.number,
-      Ukuran: r.size,
-      "Ukuran Baju": r.shirtSize || "-",
-      Item: r.itemType,
-      Harga: r.totalPrice,
-      "Tanggal Daftar": new Date(r.createdAt).toLocaleDateString("id-ID"),
-    }));
+    type Reg = typeof regs[number];
+    const allColumns: Record<string, (r: Reg, i: number) => unknown> = {
+      no: (r, i) => i + 1,
+      registrantName: (r) => r.registrantName || "-",
+      name: (r) => r.name,
+      phone: (r) => r.phone,
+      number: (r) => r.number,
+      size: (r) => r.size,
+      shirtSize: (r) => r.shirtSize || "-",
+      jerseyType: (r) => r.jerseyType,
+      itemType: (r) => r.itemType,
+      totalPrice: (r) => r.totalPrice,
+      paymentStatus: (r) => r.paymentStatus || "registered",
+      createdAt: (r) => new Date(r.createdAt).toLocaleDateString("id-ID"),
+    };
+
+    const colLabels: Record<string, string> = {
+      no: "No",
+      registrantName: "Pendaftar",
+      name: "Nama Jersey",
+      phone: "Telepon",
+      number: "Nomor Jersey",
+      size: "Ukuran",
+      shirtSize: "Ukuran Baju",
+      jerseyType: "Tipe",
+      itemType: "Item",
+      totalPrice: "Harga",
+      paymentStatus: "Status",
+      createdAt: "Tanggal Daftar",
+    };
+
+    const selected = columns && columns.length > 0 ? columns : Object.keys(allColumns);
+
+    const data = regs.map((r, i) => {
+      const row: Record<string, unknown> = {};
+      for (const col of selected) {
+        const fn = allColumns[col];
+        if (fn) row[colLabels[col] || col] = fn(r, i);
+      }
+      return row;
+    });
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);

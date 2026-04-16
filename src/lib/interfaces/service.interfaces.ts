@@ -69,13 +69,14 @@ export interface IJerseyService {
   update(id: string, data: Partial<JerseyLaunch>): Promise<JerseyLaunch>;
   delete(id: string): Promise<void>;
   register(launchId: string, data: { name: string; phone: string; number: number; size: string; jerseyType?: string; itemType?: string; shirtSize?: string }): Promise<JerseyRegistration>;
+  updateRegistration(id: string, data: Partial<JerseyRegistration>): Promise<JerseyRegistration>;
   getTakenNumbers(launchId: string): Promise<number[]>;
   removeRegistration(id: string): Promise<void>;
 }
 
 export interface IReportService {
   generateEventReport(eventId: string): Promise<Buffer>;
-  generateJerseyReport(launchId: string): Promise<Buffer>;
+  generateJerseyReport(launchId: string, columns?: string[]): Promise<Buffer>;
   generateAllEventsReport(): Promise<Buffer>;
 }
 

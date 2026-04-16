@@ -131,7 +131,15 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
 
     if (itemType === "set" && form.shirtSize && form.shirtSize !== form.size) {
       const shirtRule = surchargeList.find((entry) => entry.target === "shirt" && (entry.shirtSize || entry.size) === form.shirtSize);
-      if (shirtRule) price += (shirtRule.surcharge ?? shirtRule.price ?? 0);
+      if (shirtRule) {
+        price += (shirtRule.surcharge ?? shirtRule.price ?? 0);
+      } else {
+        const shirtBase = baseRules.find((entry) => entry.size === form.shirtSize);
+        const mainBase = exact || baseRules.find((entry) => entry.size === form.size);
+        const shirtSurcharge = shirtBase ? (shirtBase.surcharge ?? shirtBase.price ?? 0) : 0;
+        const mainSurcharge = mainBase ? (mainBase.surcharge ?? mainBase.price ?? 0) : 0;
+        if (shirtSurcharge > mainSurcharge) price += (shirtSurcharge - mainSurcharge);
+      }
     }
     return price;
   }
