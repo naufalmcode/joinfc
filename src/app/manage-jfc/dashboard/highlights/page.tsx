@@ -84,10 +84,14 @@ export default function HighlightsPage() {
     };
   }, []);
   const [editing, setEditing] = useState<string | null>(null);
+  const [editingImages, setEditingImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<(UploadProgress & { current?: number; totalFiles?: number }) | null>(null);
   const [imageQuality, setImageQuality] = useState<ImageQuality>("original");
+  const [previewHighlight, setPreviewHighlight] = useState<Highlight | null>(null);
+  const [previewSlide, setPreviewSlide] = useState(0);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   async function loadData() {
     const res = await fetch("/api/highlights");
@@ -119,13 +123,8 @@ export default function HighlightsPage() {
     setLoading(true);
 
     if (editing) {
-      // Editing: upload new pending files and merge with existing
-      let imageUrls = [...(form.imageUrl ? [form.imageUrl] : [])];
-      // Parse existing imageUrls from form — stored as comma-joined in imageUrl field for edit
-      const existingHighlight = highlights.find((h) => h.id === editing);
-      if (existingHighlight) {
-        imageUrls = [...(existingHighlight.imageUrls?.length ? existingHighlight.imageUrls : (existingHighlight.imageUrl ? [existingHighlight.imageUrl] : []))];
-      }
+      // Editing: start from current editingImages (user may have removed some)
+      let imageUrls = [...editingImages];
       if (pendingImages.length > 0) {
         try {
           const newUrls = await uploadFilesUtil(pendingImages.map((img) => img.file), (p) => setUploadProgress(p), imageQuality);
@@ -170,6 +169,7 @@ export default function HighlightsPage() {
       return [];
     });
     setEditing(null);
+    setEditingImages([]);
     setLoading(false);
     loadData();
   }
@@ -182,15 +182,21 @@ export default function HighlightsPage() {
 
   function handleEdit(h: Highlight) {
     setEditing(h.id);
+    const imgs = h.imageUrls?.length ? [...h.imageUrls] : (h.imageUrl ? [h.imageUrl] : []);
+    setEditingImages(imgs);
     setForm({
       title: h.title,
       description: h.description || "",
-      imageUrl: h.imageUrl || "",
+      imageUrl: imgs[0] || "",
     });
     setPendingImages((prev) => {
       prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
       return [];
     });
+  }
+
+  function removeEditingImage(index: number) {
+    setEditingImages((prev) => prev.filter((_, i) => i !== index));
   }
 
   return (
@@ -239,16 +245,16 @@ export default function HighlightsPage() {
               </select>
             </div>
           </div>
-          {(form.imageUrl || pendingImages.length > 0) && (
+          {(editingImages.length > 0 || form.imageUrl || pendingImages.length > 0) && (
             <div className="mt-2 flex flex-wrap gap-2">
-              {!editing && form.imageUrl && (
-                <div className="relative group">
-                  <img src={form.imageUrl} alt="" className="w-32 h-24 object-cover rounded" />
-                  <button type="button" onClick={() => setForm((f) => ({ ...f, imageUrl: "" }))}
+              {editing && editingImages.map((url, idx) => (
+                <div key={`existing-${idx}`} className="relative group">
+                  <img src={url} alt="" className="w-32 h-24 object-cover rounded border border-gray-600" />
+                  <button type="button" onClick={() => removeEditingImage(idx)}
                     className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-80 group-hover:opacity-100 transition">✕</button>
                 </div>
-              )}
-              {editing && !pendingImages.length && form.imageUrl && (
+              ))}
+              {!editing && form.imageUrl && (
                 <div className="relative group">
                   <img src={form.imageUrl} alt="" className="w-32 h-24 object-cover rounded" />
                   <button type="button" onClick={() => setForm((f) => ({ ...f, imageUrl: "" }))}
@@ -279,6 +285,7 @@ export default function HighlightsPage() {
           {editing && (
             <button type="button" onClick={() => {
               setEditing(null);
+              setEditingImages([]);
               setForm({ title: "", description: "", imageUrl: "" });
               setPendingImages((prev) => {
                 prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
@@ -297,7 +304,7 @@ export default function HighlightsPage() {
           return (
             <div key={h.id} className="bg-gray-800 rounded-xl overflow-hidden group relative">
               {allImages.length > 0 ? (
-                <div className="relative">
+                <div className="relative cursor-pointer" onClick={() => { setPreviewHighlight(h); setPreviewSlide(0); }}>
                   <img src={allImages[0]} alt={h.title} className="w-full h-40 object-cover" />
                   {allImages.length > 1 && (
                     <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/70 text-white text-xs rounded-full">
@@ -320,6 +327,49 @@ export default function HighlightsPage() {
         })}
       </div>
       {highlights.length === 0 && <p className="text-gray-500">{t("noHighlightsYet")}</p>}
+
+      {/* Preview Modal */}
+      {previewHighlight && (() => {
+        const imgs = previewHighlight.imageUrls?.length ? previewHighlight.imageUrls : (previewHighlight.imageUrl ? [previewHighlight.imageUrl] : []);
+        return (
+          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPreviewHighlight(null)}>
+            <div className="bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                <h3 className="text-white font-bold text-lg truncate">{previewHighlight.title}</h3>
+                <button onClick={() => setPreviewHighlight(null)} className="w-8 h-8 flex items-center justify-center bg-gray-700 hover:bg-gray-600 rounded-full text-white text-lg transition">&times;</button>
+              </div>
+              {imgs.length > 0 && (
+                <div className="relative group">
+                  <img src={imgs[previewSlide]} alt="" className="w-full max-h-[50vh] object-contain bg-black cursor-pointer" onClick={() => setLightboxUrl(imgs[previewSlide])} />
+                  {imgs.length > 1 && (
+                    <>
+                      <button onClick={() => setPreviewSlide((s) => (s - 1 + imgs.length) % imgs.length)} className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/70 rounded-full text-white text-xl transition opacity-0 group-hover:opacity-100">&#8249;</button>
+                      <button onClick={() => setPreviewSlide((s) => (s + 1) % imgs.length)} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/70 rounded-full text-white text-xl transition opacity-0 group-hover:opacity-100">&#8250;</button>
+                      <span className="absolute top-3 right-3 px-2 py-0.5 bg-black/60 text-white text-xs rounded-full">{previewSlide + 1} / {imgs.length}</span>
+                    </>
+                  )}
+                </div>
+              )}
+              {imgs.length > 1 && (
+                <div className="flex gap-2 p-3 overflow-x-auto">
+                  {imgs.map((url, idx) => (
+                    <img key={idx} src={url} alt="" onClick={() => setPreviewSlide(idx)}
+                      className={`w-16 h-16 object-cover rounded cursor-pointer flex-shrink-0 transition ${idx === previewSlide ? "ring-2 ring-blue-500" : "opacity-60 hover:opacity-100"}`} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Lightbox */}
+      {lightboxUrl && (
+        <div className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center" onClick={() => setLightboxUrl(null)}>
+          <button onClick={() => setLightboxUrl(null)} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white text-2xl transition z-10">&times;</button>
+          <img src={lightboxUrl} alt="" className="max-h-[90vh] max-w-[95vw] object-contain" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
 
       <ConfirmModal
         open={!!deleteId}
