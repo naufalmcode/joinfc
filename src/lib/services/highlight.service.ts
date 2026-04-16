@@ -17,11 +17,12 @@ export class HighlightService implements IHighlightService {
     return this.repository.findById(id);
   }
 
-  async create(data: { title: string; description?: string; imageUrl?: string; sortOrder?: number }): Promise<Highlight> {
+  async create(data: { title: string; description?: string; imageUrl?: string; imageUrls?: string[]; sortOrder?: number }): Promise<Highlight> {
     return this.repository.create({
       title: data.title,
       description: data.description ?? null,
       imageUrl: data.imageUrl ?? null,
+      imageUrls: data.imageUrls ?? [],
       sortOrder: data.sortOrder ?? 0,
       isActive: true,
     });

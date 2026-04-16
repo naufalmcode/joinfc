@@ -1,7 +1,24 @@
-// Shared upload utility with progress tracking and UHD upscaling
+// Shared upload utility with progress tracking and configurable quality
 
-const UHD_MIN_WIDTH = 3840;
-const UHD_MIN_HEIGHT = 2160;
+export type ImageQuality = "low" | "original" | "hd" | "uhd" | "2k" | "4k";
+
+export const IMAGE_QUALITY_OPTIONS: { value: ImageQuality; label: string; desc: string }[] = [
+  { value: "low", label: "Low", desc: "640×480" },
+  { value: "original", label: "Original", desc: "" },
+  { value: "hd", label: "HD", desc: "1280×720" },
+  { value: "uhd", label: "UHD", desc: "1920×1080" },
+  { value: "2k", label: "2K", desc: "2560×1440" },
+  { value: "4k", label: "4K", desc: "3840×2160" },
+];
+
+const QUALITY_RESOLUTIONS: Record<ImageQuality, { w: number; h: number } | null> = {
+  low: { w: 640, h: 480 },
+  original: null,
+  hd: { w: 1280, h: 720 },
+  uhd: { w: 1920, h: 1080 },
+  "2k": { w: 2560, h: 1440 },
+  "4k": { w: 3840, h: 2160 },
+};
 
 export interface UploadProgress {
   loaded: number;
@@ -11,13 +28,17 @@ export interface UploadProgress {
 }
 
 /**
- * Upscale image to UHD resolution if smaller, using canvas.
- * Returns a new File with the upscaled image.
+ * Resize image to target resolution using canvas.
  */
-function upscaleImage(file: File): Promise<File> {
-  return new Promise((resolve, reject) => {
-    // Skip non-raster images (SVG)
-    if (file.type === "image/svg+xml") {
+function processImage(file: File, quality: ImageQuality): Promise<File> {
+  return new Promise((resolve) => {
+    if (file.type === "image/svg+xml" || quality === "original") {
+      resolve(file);
+      return;
+    }
+
+    const target = QUALITY_RESOLUTIONS[quality];
+    if (!target) {
       resolve(file);
       return;
     }
@@ -30,14 +51,20 @@ function upscaleImage(file: File): Promise<File> {
 
       const { naturalWidth: w, naturalHeight: h } = img;
 
-      // If already UHD or larger, return original
-      if (w >= UHD_MIN_WIDTH || h >= UHD_MIN_HEIGHT) {
+      // For "low" quality, downscale if larger. For others, upscale if smaller.
+      const isDownscale = quality === "low";
+      if (isDownscale && w <= target.w && h <= target.h) {
+        resolve(file);
+        return;
+      }
+      if (!isDownscale && w >= target.w && h >= target.h) {
         resolve(file);
         return;
       }
 
-      // Calculate scale to reach UHD on the longest side
-      const scale = Math.max(UHD_MIN_WIDTH / w, UHD_MIN_HEIGHT / h);
+      const scale = isDownscale
+        ? Math.min(target.w / w, target.h / h)
+        : Math.max(target.w / w, target.h / h);
       const newW = Math.round(w * scale);
       const newH = Math.round(h * scale);
 
@@ -50,14 +77,12 @@ function upscaleImage(file: File): Promise<File> {
         return;
       }
 
-      // Use high-quality rendering
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, 0, 0, newW, newH);
 
-      // Convert to blob — use webp for better quality/size ratio, fallback to original type
       const outputType = file.type === "image/png" ? "image/png" : "image/webp";
-      const quality = outputType === "image/png" ? undefined : 0.92;
+      const outputQuality = outputType === "image/png" ? undefined : 0.92;
 
       canvas.toBlob(
         (blob) => {
@@ -70,13 +95,13 @@ function upscaleImage(file: File): Promise<File> {
           resolve(new File([blob], name, { type: outputType }));
         },
         outputType,
-        quality
+        outputQuality
       );
     };
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      resolve(file); // Fallback to original on error
+      resolve(file);
     };
 
     img.src = url;
@@ -84,23 +109,22 @@ function upscaleImage(file: File): Promise<File> {
 }
 
 /**
- * Upload a single file with progress tracking and UHD upscaling.
+ * Upload a single file with progress tracking and quality processing.
  */
 export async function uploadFile(
   file: File,
-  onProgress?: (progress: UploadProgress) => void
+  onProgress?: (progress: UploadProgress) => void,
+  quality: ImageQuality = "original"
 ): Promise<string> {
-  // Phase 1: Processing (upscale)
   onProgress?.({ loaded: 0, total: 0, percent: 0, phase: "processing" });
 
   let processedFile: File;
   try {
-    processedFile = await upscaleImage(file);
+    processedFile = await processImage(file, quality);
   } catch {
     processedFile = file;
   }
 
-  // Phase 2: Uploading with fetch (always sends cookies for same-origin)
   onProgress?.({ loaded: 0, total: processedFile.size, percent: 10, phase: "uploading" });
 
   const formData = new FormData();
@@ -133,7 +157,8 @@ export async function uploadFile(
  */
 export async function uploadFiles(
   files: File[],
-  onProgress?: (progress: UploadProgress & { current: number; totalFiles: number }) => void
+  onProgress?: (progress: UploadProgress & { current: number; totalFiles: number }) => void,
+  quality: ImageQuality = "original"
 ): Promise<string[]> {
   const urls: string[] = [];
   const totalFiles = files.length;
@@ -148,7 +173,7 @@ export async function uploadFiles(
         current: i + 1,
         totalFiles,
       });
-    });
+    }, quality);
     urls.push(url);
   }
 

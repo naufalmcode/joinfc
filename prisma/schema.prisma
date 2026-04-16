@@ -31,6 +31,7 @@ model Highlight {
   title       String
   description String?
   imageUrl    String?
+  imageUrls   String[] @default([])
   sortOrder   Int      @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

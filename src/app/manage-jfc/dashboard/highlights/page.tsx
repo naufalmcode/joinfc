@@ -5,13 +5,14 @@ import { useAdminTheme } from "@/lib/admin-theme";
 import { useI18n } from "@/lib/i18n";
 import ConfirmModal from "@/components/ConfirmModal";
 import UploadProgressBar from "@/components/UploadProgressBar";
-import { uploadFile, uploadFiles as uploadFilesUtil, type UploadProgress } from "@/lib/upload";
+import { uploadFile, uploadFiles as uploadFilesUtil, type UploadProgress, IMAGE_QUALITY_OPTIONS, type ImageQuality } from "@/lib/upload";
 
 interface Highlight {
   id: string;
   title: string;
   description: string | null;
   imageUrl: string | null;
+  imageUrls: string[];
   sortOrder: number;
   isActive: boolean;
 }
@@ -86,6 +87,7 @@ export default function HighlightsPage() {
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<(UploadProgress & { current?: number; totalFiles?: number }) | null>(null);
+  const [imageQuality, setImageQuality] = useState<ImageQuality>("original");
 
   async function loadData() {
     const res = await fetch("/api/highlights");
@@ -117,11 +119,17 @@ export default function HighlightsPage() {
     setLoading(true);
 
     if (editing) {
-      // Editing: use first pending file or keep existing
-      let imageUrl = form.imageUrl;
+      // Editing: upload new pending files and merge with existing
+      let imageUrls = [...(form.imageUrl ? [form.imageUrl] : [])];
+      // Parse existing imageUrls from form — stored as comma-joined in imageUrl field for edit
+      const existingHighlight = highlights.find((h) => h.id === editing);
+      if (existingHighlight) {
+        imageUrls = [...(existingHighlight.imageUrls?.length ? existingHighlight.imageUrls : (existingHighlight.imageUrl ? [existingHighlight.imageUrl] : []))];
+      }
       if (pendingImages.length > 0) {
         try {
-          imageUrl = await uploadFile(pendingImages[0].file, (p) => setUploadProgress(p));
+          const newUrls = await uploadFilesUtil(pendingImages.map((img) => img.file), (p) => setUploadProgress(p), imageQuality);
+          imageUrls = [...imageUrls, ...newUrls];
         } catch (err) {
           alert(err instanceof Error ? err.message : "Upload gagal");
           setLoading(false);
@@ -133,14 +141,14 @@ export default function HighlightsPage() {
       await fetch(`/api/highlights/${editing}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, imageUrl }),
+        body: JSON.stringify({ title: form.title, description: form.description, imageUrl: imageUrls[0] || null, imageUrls }),
       });
     } else {
-      // Adding new: create one highlight per file
+      // Adding new: all images go into ONE post
+      let imageUrls: string[] = [];
       if (pendingImages.length > 0) {
-        let uploadedUrls: string[] = [];
         try {
-          uploadedUrls = await uploadFilesUtil(pendingImages.map((img) => img.file), (p) => setUploadProgress(p));
+          imageUrls = await uploadFilesUtil(pendingImages.map((img) => img.file), (p) => setUploadProgress(p), imageQuality);
         } catch (err) {
           alert(err instanceof Error ? err.message : "Upload gagal");
           setLoading(false);
@@ -148,20 +156,12 @@ export default function HighlightsPage() {
           return;
         }
         setUploadProgress(null);
-        for (const url of uploadedUrls) {
-          await fetch("/api/highlights", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...form, imageUrl: url }),
-          });
-        }
-      } else {
-        await fetch("/api/highlights", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...form, imageUrl: form.imageUrl }),
-        });
       }
+      await fetch("/api/highlights", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, imageUrl: imageUrls[0] || form.imageUrl || null, imageUrls }),
+      });
     }
 
     setForm({ title: "", description: "", imageUrl: "" });
@@ -218,12 +218,26 @@ export default function HighlightsPage() {
         <div>
           <label className="block text-gray-300 text-sm mb-1">{t("photoMultiple")}</label>
           <p className="text-gray-500 text-xs mb-2">{t("recommendPhotoSize")}</p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 flex-wrap">
             <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg cursor-pointer transition">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               {t("chooseFile")}
               <input type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
             </label>
+            <div className="flex items-center gap-2">
+              <label className="text-gray-400 text-xs">{t("imageQuality")}:</label>
+              <select
+                value={imageQuality}
+                onChange={(e) => setImageQuality(e.target.value as ImageQuality)}
+                className="px-2 py-1 bg-gray-700 text-white rounded text-xs border border-gray-600"
+              >
+                {IMAGE_QUALITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}{opt.desc ? ` (${opt.desc})` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           {(form.imageUrl || pendingImages.length > 0) && (
             <div className="mt-2 flex flex-wrap gap-2">
@@ -278,22 +292,32 @@ export default function HighlightsPage() {
       </form>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {highlights.map((h) => (
-          <div key={h.id} className="bg-gray-800 rounded-xl overflow-hidden group relative">
-            {h.imageUrl ? (
-              <img src={h.imageUrl} alt={h.title} className="w-full h-40 object-cover" />
-            ) : (
-              <div className="w-full h-40 bg-gray-700 flex items-center justify-center text-gray-500">{t("noImage")}</div>
-            )}
-            <div className="p-3">
-              <p className="text-white text-sm font-medium truncate">{h.title}</p>
+        {highlights.map((h) => {
+          const allImages = h.imageUrls?.length ? h.imageUrls : (h.imageUrl ? [h.imageUrl] : []);
+          return (
+            <div key={h.id} className="bg-gray-800 rounded-xl overflow-hidden group relative">
+              {allImages.length > 0 ? (
+                <div className="relative">
+                  <img src={allImages[0]} alt={h.title} className="w-full h-40 object-cover" />
+                  {allImages.length > 1 && (
+                    <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/70 text-white text-xs rounded-full">
+                      📷 {allImages.length}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full h-40 bg-gray-700 flex items-center justify-center text-gray-500">{t("noImage")}</div>
+              )}
+              <div className="p-3">
+                <p className="text-white text-sm font-medium truncate">{h.title}</p>
+              </div>
+              <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
+                <button onClick={() => handleEdit(h)} className="p-1.5 bg-blue-600 text-white rounded text-xs">{t("edit")}</button>
+                <button onClick={() => setDeleteId(h.id)} className="p-1.5 bg-red-600 text-white rounded text-xs">{t("delete")}</button>
+              </div>
             </div>
-            <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
-              <button onClick={() => handleEdit(h)} className="p-1.5 bg-blue-600 text-white rounded text-xs">{t("edit")}</button>
-              <button onClick={() => setDeleteId(h.id)} className="p-1.5 bg-red-600 text-white rounded text-xs">{t("delete")}</button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {highlights.length === 0 && <p className="text-gray-500">{t("noHighlightsYet")}</p>}
 

@@ -4,6 +4,8 @@ import { successResponse, errorResponse } from "@/lib/api-utils";
 import { v4 as uuidv4 } from "uuid";
 import { put } from "@vercel/blob";
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   // Try standard session validation first
   let isAdmin = await validateAdminSession();

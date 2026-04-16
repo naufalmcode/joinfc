@@ -26,6 +26,7 @@ interface Highlight {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  imageUrls: string[];
 }
 
 interface NewsItem {
@@ -304,18 +305,25 @@ export default function HomePage() {
                     ›
                   </button>
                   <div ref={carouselRef} className="flex gap-3 overflow-x-auto pb-3 scrollbar-thin scroll-smooth snap-x snap-mandatory" style={{ scrollbarColor: `${primary} transparent` }}>
-                    {highlights.map((h) => (
-                      <Link key={h.id} href={`/highlight/${h.id}`} className="flex-shrink-0 w-64 md:w-72 bg-gray-800 rounded-xl overflow-hidden group snap-start">
-                        {h.imageUrl && (
-                          <div className="relative">
-                            <Image src={h.imageUrl} alt={h.title} width={288} height={160} className="w-full h-40 object-cover group-hover:scale-105 transition duration-300" />
-                            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                              <p className="text-white text-sm font-medium truncate">{h.title}</p>
+                    {highlights.map((h) => {
+                      const thumbUrl = h.imageUrls?.length ? h.imageUrls[0] : h.imageUrl;
+                      const imgCount = h.imageUrls?.length || (h.imageUrl ? 1 : 0);
+                      return (
+                        <Link key={h.id} href={`/highlight/${h.id}`} className="flex-shrink-0 w-64 md:w-72 bg-gray-800 rounded-xl overflow-hidden group snap-start">
+                          {thumbUrl && (
+                            <div className="relative">
+                              <Image src={thumbUrl} alt={h.title} width={288} height={160} className="w-full h-40 object-cover group-hover:scale-105 transition duration-300" />
+                              {imgCount > 1 && (
+                                <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/60 text-white text-xs rounded-full">📷 {imgCount}</span>
+                              )}
+                              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                                <p className="text-white text-sm font-medium truncate">{h.title}</p>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </Link>
-                    ))}
+                          )}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
