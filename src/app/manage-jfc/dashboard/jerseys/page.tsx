@@ -89,6 +89,7 @@ export default function JerseysPage() {
   const [reportColumns, setReportColumns] = useState<Record<string, string[]>>({});
   const [showReportConfig, setShowReportConfig] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<(UploadProgress & { current?: number; totalFiles?: number }) | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     pendingImagesRef.current = pendingImages;
@@ -224,8 +225,25 @@ export default function JerseysPage() {
     loadData();
   }
 
-  function downloadReport(url: string) {
-    window.open(url, "_blank");
+  async function downloadReport(url: string) {
+    try {
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error(`Download failed (${res.status})`);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      const disposition = res.headers.get("Content-Disposition");
+      const match = disposition?.match(/filename="?([^"]+)"?/);
+      a.download = match ? match[1] : "report.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      setActionError("Download gagal. Pastikan sesi admin masih aktif.");
+      setTimeout(() => setActionError(null), 4000);
+    }
   }
 
   async function saveRegEdit(regId: string, jerseyId: string) {
@@ -235,16 +253,19 @@ export default function JerseysPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editRegForm),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setViewRegistrations((prev) => ({
-          ...prev,
-          [jerseyId]: prev[jerseyId].map((r) => r.id === regId ? { ...r, ...data.data } : r),
-        }));
-        setEditingReg(null);
-        setEditRegForm({});
-      }
-    } catch { /* ignore */ }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `Update failed (${res.status})`);
+      setViewRegistrations((prev) => ({
+        ...prev,
+        [jerseyId]: prev[jerseyId].map((r) => r.id === regId ? { ...r, ...data.data } : r),
+      }));
+      setEditingReg(null);
+      setEditRegForm({});
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Update gagal";
+      setActionError(msg);
+      setTimeout(() => setActionError(null), 4000);
+    }
   }
 
   async function updatePaymentStatus(regId: string, jerseyId: string, status: string) {
@@ -254,13 +275,16 @@ export default function JerseysPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paymentStatus: status }),
       });
-      if (res.ok) {
-        setViewRegistrations((prev) => ({
-          ...prev,
-          [jerseyId]: prev[jerseyId].map((r) => r.id === regId ? { ...r, paymentStatus: status } : r),
-        }));
-      }
-    } catch { /* ignore */ }
+      if (!res.ok) throw new Error(`Update failed (${res.status})`);
+      setViewRegistrations((prev) => ({
+        ...prev,
+        [jerseyId]: prev[jerseyId].map((r) => r.id === regId ? { ...r, paymentStatus: status } : r),
+      }));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Update gagal";
+      setActionError(msg);
+      setTimeout(() => setActionError(null), 4000);
+    }
   }
 
   function getStatusColor(status: string): string {
@@ -301,11 +325,11 @@ export default function JerseysPage() {
     });
   }
 
-  function downloadCustomReport(jerseyId: string) {
+  async function downloadCustomReport(jerseyId: string) {
     const cols = reportColumns[jerseyId] || DEFAULT_REPORT_COLS;
     if (cols.length === 0) return;
-    window.open(`/api/reports?type=jersey&id=${jerseyId}&columns=${cols.join(",")}`, "_blank");
     setShowReportConfig(null);
+    await downloadReport(`/api/reports?type=jersey&id=${jerseyId}&columns=${cols.join(',')}`);
   }
 
   function parseSurcharges(raw: string) {
@@ -355,6 +379,12 @@ export default function JerseysPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-white mb-8">{t("jerseyLaunch")}</h1>
+
+      {actionError && (
+        <div className="mb-4 p-3 bg-red-900/50 text-red-300 rounded-lg text-sm">
+          {actionError}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="bg-gray-800 rounded-xl p-6 mb-8 space-y-4 max-w-2xl">
         <h2 className="text-lg font-semibold text-white">{editing ? `${t("edit")} Jersey` : t("launchNewJersey")}</h2>

@@ -18,8 +18,24 @@ export default function ReportsPage() {
     fetch("/api/jerseys").then((r) => r.json()).then((d) => setJerseys(d.data || []));
   }, []);
 
-  function download(url: string) {
-    window.open(url, "_blank");
+  async function download(url: string) {
+    try {
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error(`Download failed (${res.status})`);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      const disposition = res.headers.get("Content-Disposition");
+      const match = disposition?.match(/filename="?([^"]+)"?/);
+      a.download = match ? match[1] : "report.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      alert("Download gagal. Pastikan sesi admin masih aktif.");
+    }
   }
 
   return (

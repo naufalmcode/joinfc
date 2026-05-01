@@ -13,6 +13,8 @@ interface JerseyReg {
   jerseyType: string;
   itemType: string;
   totalPrice: number;
+  paymentStatus: string;
+  createdAt: string;
 }
 
 interface JerseyDetail {
@@ -41,6 +43,20 @@ type SurchargeEntry = {
 
 function formatRupiah(amount: number): string {
   return "Rp " + amount.toLocaleString("id-ID");
+}
+
+function formatDateJakarta(dateStr: string): string {
+  return new Date(dateStr).toLocaleString("sv-SE", { timeZone: "Asia/Jakarta" });
+}
+
+function getPublicStatusColor(status: string): string {
+  switch (status) {
+    case "dp": return "bg-yellow-800 text-yellow-300";
+    case "paid": return "bg-green-800 text-green-300";
+    case "production": return "bg-blue-800 text-blue-300";
+    case "done": return "bg-emerald-800 text-emerald-300";
+    default: return "bg-gray-600 text-gray-300";
+  }
 }
 
 function parseSurchargeList(raw: string): SurchargeEntry[] {
@@ -73,7 +89,9 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
     if (data.data) {
       setJersey(data.data);
       const map: Record<number, string> = {};
-      data.data.registrations.forEach((r: JerseyReg) => { map[r.number] = r.name; });
+      data.data.registrations
+        .filter((r: JerseyReg) => r.paymentStatus !== "cancel" && r.paymentStatus !== "dropped")
+        .forEach((r: JerseyReg) => { map[r.number] = r.name; });
       setTakenMap(map);
     } else {
       setNotFound(true);
@@ -221,6 +239,9 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
   const hasPrice = jersey.basePrice > 0;
   const availableItemTypes = getAvailableItemTypes();
   const availableCustomShirtSizes = getAvailableCustomShirtSizes();
+  const activeRegistrations = jersey.registrations.filter(
+    (r) => r.paymentStatus !== "cancel" && r.paymentStatus !== "dropped"
+  );
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -288,7 +309,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
           )}
           <div className="p-6 md:p-8">
             <h1 className="text-3xl font-bold">{jersey.title}</h1>
-            <p className="text-gray-400 mt-2">{jersey.registrations.length} {t("peopleRegistered")}</p>
+            <p className="text-gray-400 mt-2">{activeRegistrations.length} {t("peopleRegistered")}</p>
             {hasPrice && (
               <p className="text-green-400 font-semibold text-lg mt-1">{formatRupiah(jersey.basePrice)}</p>
             )}
@@ -531,29 +552,37 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
         )}
 
         {/* Registered List */}
-        {jersey.registrations.length > 0 && (
+        {activeRegistrations.length > 0 && (
           <div className="bg-gray-800 rounded-xl p-6 md:p-8 mt-6">
-            <h2 className="text-xl font-bold mb-4">{t("registered")} ({jersey.registrations.length})</h2>
+            <h2 className="text-xl font-bold mb-4">{t("registered")} ({activeRegistrations.length})</h2>
             <div className="space-y-2">
-              {jersey.registrations.map((r) => (
-                <div key={r.id} className="flex items-center gap-3 p-2 bg-gray-700 rounded">
-                  <span className="w-10 h-10 flex items-center justify-center bg-green-600 text-white rounded font-mono font-bold">{r.number}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium">{r.name}</p>
-                    <p className="text-gray-500 text-xs">
-                      {t("size")}: {r.size}
-                      {r.shirtSize ? ` · ${t("customShirtSizeLabel")}: ${r.shirtSize}` : ""}
-                      {r.itemType && r.itemType !== "set" ? ` · ${r.itemType === "shirt" ? t("itemTypeShirt") : t("itemTypeShorts")}` : ""}
-                    </p>
+              {activeRegistrations.map((r) => (
+                <div key={r.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 bg-gray-700 rounded">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <span className="w-10 h-10 flex items-center justify-center bg-green-600 text-white rounded font-mono font-bold flex-shrink-0">{r.number}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-medium">{r.name}</p>
+                      <p className="text-gray-500 text-xs">
+                        {t("size")}: {r.size}
+                        {r.shirtSize ? ` · ${t("customShirtSizeLabel")}: ${r.shirtSize}` : ""}
+                        {r.itemType && r.itemType !== "set" ? ` · ${r.itemType === "shirt" ? t("itemTypeShirt") : t("itemTypeShorts")}` : ""}
+                      </p>
+                      <p className="text-gray-600 text-[10px] mt-0.5">{formatDateJakarta(r.createdAt)}</p>
+                    </div>
                   </div>
-                  {hasPrice && r.totalPrice > 0 && (
-                    <span className="text-green-400 text-sm font-semibold whitespace-nowrap">{formatRupiah(r.totalPrice)}</span>
-                  )}
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"
-                  }`}>
-                    {r.jerseyType === "goalkeeper" ? "🧤 " + t("jerseyGoalkeeper") : "⚽ " + t("jerseyPlayer")}
-                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-13 sm:ml-0">
+                    {hasPrice && r.totalPrice > 0 && (
+                      <span className="text-green-400 text-sm font-semibold whitespace-nowrap">{formatRupiah(r.totalPrice)}</span>
+                    )}
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${getPublicStatusColor(r.paymentStatus)}`}>
+                      {r.paymentStatus === "paid" ? "Lunas" : r.paymentStatus === "dp" ? "DP" : r.paymentStatus === "production" ? "Produksi" : r.paymentStatus === "done" ? "Selesai" : "Terdaftar"}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"
+                    }`}>
+                      {r.jerseyType === "goalkeeper" ? "🧤 " + t("jerseyGoalkeeper") : "⚽ " + t("jerseyPlayer")}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
