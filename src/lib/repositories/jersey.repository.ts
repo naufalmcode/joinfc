@@ -10,7 +10,7 @@ import type {
 export class JerseyLaunchRepository implements IJerseyLaunchRepository {
   async findAll(): Promise<JerseyLaunchWithRegistrations[]> {
     return prisma.jerseyLaunch.findMany({
-      include: { registrations: { orderBy: { number: "asc" } } },
+      include: { registrations: { orderBy: { createdAt: "asc" } } },
       orderBy: { createdAt: "desc" },
     });
   }
@@ -25,7 +25,7 @@ export class JerseyLaunchRepository implements IJerseyLaunchRepository {
   async findOpen(): Promise<JerseyLaunchWithRegistrations[]> {
     return prisma.jerseyLaunch.findMany({
       where: { status: "open", isVisible: true },
-      include: { registrations: { orderBy: { number: "asc" } } },
+      include: { registrations: { orderBy: { createdAt: "asc" } } },
       orderBy: { createdAt: "desc" },
     });
   }
@@ -33,14 +33,14 @@ export class JerseyLaunchRepository implements IJerseyLaunchRepository {
   async findById(id: string): Promise<JerseyLaunchWithRegistrations | null> {
     return prisma.jerseyLaunch.findUnique({
       where: { id },
-      include: { registrations: { orderBy: { number: "asc" } } },
+      include: { registrations: { orderBy: { createdAt: "asc" } } },
     });
   }
 
   async findBySlug(slug: string): Promise<JerseyLaunchWithRegistrations | null> {
     return prisma.jerseyLaunch.findUnique({
       where: { slug },
-      include: { registrations: { orderBy: { number: "asc" } } },
+      include: { registrations: { orderBy: { createdAt: "asc" } } },
     });
   }
 
@@ -61,7 +61,7 @@ export class JerseyRegistrationRepository implements IJerseyRegistrationReposito
   async findByLaunchId(launchId: string): Promise<JerseyRegistration[]> {
     return prisma.jerseyRegistration.findMany({
       where: { jerseyLaunchId: launchId },
-      orderBy: { number: "asc" },
+      orderBy: { createdAt: "asc" },
     });
   }
 
