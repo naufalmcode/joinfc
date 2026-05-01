@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db/prisma";
+import { prisma, jakartaNow } from "@/lib/db/prisma";
 import type { News } from "@prisma/client";
 import type { INewsRepository } from "@/lib/interfaces/repository.interfaces";
 
@@ -19,7 +19,7 @@ export class NewsRepository implements INewsRepository {
   }
 
   async create(data: Omit<News, "id" | "createdAt" | "updatedAt">): Promise<News> {
-    return prisma.news.create({ data });
+    return prisma.news.create({ data: { ...data, createdAt: jakartaNow() } });
   }
 
   async update(id: string, data: Partial<News>): Promise<News> {

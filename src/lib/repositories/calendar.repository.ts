@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db/prisma";
+import { prisma, jakartaNow } from "@/lib/db/prisma";
 import type { CalendarSchedule } from "@prisma/client";
 import type { ICalendarRepository } from "@/lib/interfaces/repository.interfaces";
 
@@ -19,7 +19,7 @@ export class CalendarRepository implements ICalendarRepository {
   }
 
   async create(data: Omit<CalendarSchedule, "id" | "createdAt" | "updatedAt">): Promise<CalendarSchedule> {
-    return prisma.calendarSchedule.create({ data });
+    return prisma.calendarSchedule.create({ data: { ...data, createdAt: jakartaNow() } });
   }
 
   async update(id: string, data: Partial<CalendarSchedule>): Promise<CalendarSchedule> {

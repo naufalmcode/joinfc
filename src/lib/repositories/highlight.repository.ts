@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db/prisma";
+import { prisma, jakartaNow } from "@/lib/db/prisma";
 import type { Highlight } from "@prisma/client";
 import type { IHighlightRepository } from "@/lib/interfaces/repository.interfaces";
 
@@ -19,7 +19,7 @@ export class HighlightRepository implements IHighlightRepository {
   }
 
   async create(data: Omit<Highlight, "id" | "createdAt" | "updatedAt">): Promise<Highlight> {
-    return prisma.highlight.create({ data });
+    return prisma.highlight.create({ data: { ...data, createdAt: jakartaNow() } });
   }
 
   async update(id: string, data: Partial<Highlight>): Promise<Highlight> {

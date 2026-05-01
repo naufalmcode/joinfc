@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db/prisma";
+import { prisma, jakartaNow } from "@/lib/db/prisma";
 import type { Event, EventRegistration } from "@prisma/client";
 import type {
   IEventRepository,
@@ -38,7 +38,7 @@ export class EventRepository implements IEventRepository {
   }
 
   async create(data: Omit<Event, "id" | "createdAt" | "updatedAt">): Promise<Event> {
-    return prisma.event.create({ data });
+    return prisma.event.create({ data: { ...data, createdAt: jakartaNow() } });
   }
 
   async update(id: string, data: Partial<Event>): Promise<Event> {
@@ -59,7 +59,7 @@ export class EventRegistrationRepository implements IEventRegistrationRepository
   }
 
   async create(data: Omit<EventRegistration, "id" | "createdAt">): Promise<EventRegistration> {
-    return prisma.eventRegistration.create({ data });
+    return prisma.eventRegistration.create({ data: { ...data, createdAt: jakartaNow() } });
   }
 
   async update(id: string, data: Partial<EventRegistration>): Promise<EventRegistration> {

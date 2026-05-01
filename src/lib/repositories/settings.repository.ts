@@ -1,5 +1,5 @@
 // SOLID: Single Responsibility - only handles SiteSettings data access
-import { prisma } from "@/lib/db/prisma";
+import { prisma, jakartaNow } from "@/lib/db/prisma";
 import type { SiteSettings } from "@prisma/client";
 import type { ISiteSettingsRepository } from "@/lib/interfaces/repository.interfaces";
 
@@ -7,7 +7,7 @@ export class SiteSettingsRepository implements ISiteSettingsRepository {
   async get(): Promise<SiteSettings> {
     let settings = await prisma.siteSettings.findUnique({ where: { id: "default" } });
     if (!settings) {
-      settings = await prisma.siteSettings.create({ data: { id: "default" } });
+      settings = await prisma.siteSettings.create({ data: { id: "default", createdAt: jakartaNow() } });
     }
     return settings;
   }

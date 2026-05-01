@@ -18,7 +18,7 @@ export class ReportService implements IReportService {
       Telepon: r.phone,
       Posisi: r.position === "goalkeeper" ? "Kiper" : "Pemain",
       Status: r.status === "confirmed" ? "Confirmed" : "Waiting List",
-      "Tanggal Daftar": new Date(r.createdAt).toLocaleString("sv-SE", { timeZone: "Asia/Jakarta" }),
+      "Tanggal Daftar": new Date(r.createdAt).toLocaleString("sv-SE", { timeZone: "UTC" }),
     }));
 
     const wb = XLSX.utils.book_new();
@@ -45,7 +45,7 @@ export class ReportService implements IReportService {
       itemType: (r) => r.itemType,
       totalPrice: (r) => r.totalPrice,
       paymentStatus: (r) => r.paymentStatus || "registered",
-      createdAt: (r) => new Date(r.createdAt).toLocaleString("sv-SE", { timeZone: "Asia/Jakarta" }),
+      createdAt: (r) => new Date(r.createdAt).toLocaleString("sv-SE", { timeZone: "UTC" }),
     };
 
     const colLabels: Record<string, string> = {
@@ -91,7 +91,7 @@ export class ReportService implements IReportService {
         Telepon: r.phone,
         Posisi: r.position === "goalkeeper" ? "Kiper" : "Pemain",
         Status: r.status === "confirmed" ? "Confirmed" : "Waiting List",
-        "Tanggal Daftar": new Date(r.createdAt).toLocaleString("sv-SE", { timeZone: "Asia/Jakarta" }),
+        "Tanggal Daftar": new Date(r.createdAt).toLocaleString("sv-SE", { timeZone: "UTC" }),
       }));
       const ws = XLSX.utils.json_to_sheet(data);
       const sheetName = event.title.slice(0, 31).replace(/[\\/*?[\]]/g, "");

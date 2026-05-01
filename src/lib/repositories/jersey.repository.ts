@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db/prisma";
+import { prisma, jakartaNow } from "@/lib/db/prisma";
 import type { JerseyLaunch, JerseyRegistration } from "@prisma/client";
 import type {
   IJerseyLaunchRepository,
@@ -45,7 +45,7 @@ export class JerseyLaunchRepository implements IJerseyLaunchRepository {
   }
 
   async create(data: Omit<JerseyLaunch, "id" | "createdAt" | "updatedAt">): Promise<JerseyLaunch> {
-    return prisma.jerseyLaunch.create({ data });
+    return prisma.jerseyLaunch.create({ data: { ...data, createdAt: jakartaNow() } });
   }
 
   async update(id: string, data: Partial<JerseyLaunch>): Promise<JerseyLaunch> {
@@ -74,7 +74,7 @@ export class JerseyRegistrationRepository implements IJerseyRegistrationReposito
   }
 
   async create(data: Omit<JerseyRegistration, "id" | "createdAt">): Promise<JerseyRegistration> {
-    return prisma.jerseyRegistration.create({ data });
+    return prisma.jerseyRegistration.create({ data: { ...data, createdAt: jakartaNow() } });
   }
 
   async update(id: string, data: Partial<JerseyRegistration>): Promise<JerseyRegistration> {

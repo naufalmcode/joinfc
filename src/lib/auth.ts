@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/db/prisma";
+import { prisma, jakartaNow } from "@/lib/db/prisma";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 
@@ -23,7 +23,7 @@ export async function createAdminSession(): Promise<string> {
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
 
   await prisma.adminSession.create({
-    data: { token, expiresAt },
+    data: { token, expiresAt, createdAt: jakartaNow() },
   });
 
   const cookieStore = await cookies();

@@ -45,8 +45,8 @@ function formatRupiah(amount: number): string {
   return "Rp " + amount.toLocaleString("id-ID");
 }
 
-function formatDateJakarta(dateStr: string): string {
-  return new Date(dateStr).toLocaleString("sv-SE", { timeZone: "Asia/Jakarta" });
+function formatDateWIB(dateStr: string): string {
+  return new Date(dateStr).toLocaleString("sv-SE", { timeZone: "UTC" });
 }
 
 function getPublicStatusColor(status: string): string {
@@ -562,12 +562,12 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                     <span className="w-10 h-10 flex items-center justify-center bg-green-600 text-white rounded font-mono font-bold flex-shrink-0">{r.number}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-sm font-medium">{r.name}</p>
-                      <p className="text-gray-500 text-xs">
+                      <p className="text-gray-300 text-xs">
                         {t("size")}: {r.size}
                         {r.shirtSize ? ` · ${t("customShirtSizeLabel")}: ${r.shirtSize}` : ""}
                         {r.itemType && r.itemType !== "set" ? ` · ${r.itemType === "shirt" ? t("itemTypeShirt") : t("itemTypeShorts")}` : ""}
                       </p>
-                      <p className="text-gray-600 text-[10px] mt-0.5">{formatDateJakarta(r.createdAt)}</p>
+                      <p className="text-gray-300 text-[10px] mt-0.5">{formatDateWIB(r.createdAt)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-13 sm:ml-0">

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db/prisma";
+import { prisma, jakartaNow } from "@/lib/db/prisma";
 import type { Vote, VoteResponse } from "@prisma/client";
 import type {
   IVoteRepository,
@@ -38,7 +38,7 @@ export class VoteRepository implements IVoteRepository {
   }
 
   async create(data: { title: string; status?: string }): Promise<Vote> {
-    return prisma.vote.create({ data: { title: data.title, status: data.status ?? "open" } });
+    return prisma.vote.create({ data: { title: data.title, status: data.status ?? "open", createdAt: jakartaNow() } });
   }
 
   async update(id: string, data: Partial<Vote>): Promise<Vote> {
@@ -58,6 +58,7 @@ export class VoteOptionRepository implements IVoteOptionRepository {
         name: opt.name,
         imageUrl: opt.imageUrl ?? null,
         sortOrder: opt.sortOrder ?? i,
+        createdAt: jakartaNow(),
       })),
     });
   }
@@ -69,7 +70,7 @@ export class VoteOptionRepository implements IVoteOptionRepository {
 
 export class VoteResponseRepository implements IVoteResponseRepository {
   async create(data: { voteId: string; optionId: string }): Promise<VoteResponse> {
-    return prisma.voteResponse.create({ data });
+    return prisma.voteResponse.create({ data: { ...data, createdAt: jakartaNow() } });
   }
 
   async countByOptionId(optionId: string): Promise<number> {
