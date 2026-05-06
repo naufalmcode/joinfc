@@ -61,7 +61,7 @@ export class JerseyService implements IJerseyService {
     launchId: string,
     data: { registrantName?: string; name: string; phone: string; number: number; size: string; jerseyType: string; itemType?: string; shirtSize?: string }
   ): Promise<JerseyRegistration> {
-    if (data.number < 1 || data.number > 99) {
+    if (data.number < 0 || data.number > 99) {
       throw new Error("Number must be between 0 and 99");
     }
 
