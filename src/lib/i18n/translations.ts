@@ -56,7 +56,7 @@ export const translations = {
     goalkeepersFull: "Kiper penuh",
 
     // Jersey page
-    chooseNumber: "Pilih Nomor Jersey (1-99)",
+    chooseNumber: "Pilih Nomor Jersey (0-99)",
     available: "Tersedia",
     selected: "Dipilih",
     taken: "Sudah diambil",
@@ -382,7 +382,7 @@ export const translations = {
     playersFull: "Players full",
     goalkeepersFull: "Goalkeepers full",
 
-    chooseNumber: "Choose Jersey Number (1-99)",
+    chooseNumber: "Choose Jersey Number (0-99)",
     available: "Available",
     selected: "Selected",
     taken: "Taken",

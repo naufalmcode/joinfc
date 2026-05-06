@@ -502,22 +502,22 @@ export default function JerseysPage() {
             </div>
           )}
           <div className="flex gap-2">
-          <button type="submit" disabled={loading} className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
-            {loading ? t("uploadingAndSaving") : editing ? t("update") : t("launch")}
-          </button>
-          {editing && (
-            <button type="button"
-              onClick={() => {
-                setEditing(null);
-                setForm({ title: "", designUrls: [], basePrice: 0, surchargeList: [], shirtSizeSurchargeList: [] });
-                setPendingImages((prev) => {
-                  prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
-                  return [];
-                });
-              }}
-              className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition"
+            <button type="submit" disabled={loading} className="px-6 py-2 admin-btn-primary rounded-lg transition disabled:opacity-50">
+              {loading ? t("uploadingAndSaving") : editing ? t("update") : t("launch")}
+            </button>
+            {editing && (
+              <button type="button"
+                onClick={() => {
+                  setEditing(null);
+                  setForm({ title: "", designUrls: [], basePrice: 0, surchargeList: [], shirtSizeSurchargeList: [] });
+                  setPendingImages((prev) => {
+                    prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+                    return [];
+                  });
+                }}
+                className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition"
               >{t("cancel")}</button>
-          )}
+            )}
           </div>
         </div>
       </form>
@@ -564,7 +564,7 @@ export default function JerseysPage() {
               </div>
               <div className="flex gap-2 flex-shrink-0 flex-wrap">
                 <button onClick={() => toggleView(j.id)}
-                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewJersey === j.id ? t("closeView") : t("viewDetail")}</button>
+                  className="px-3 py-1 bg-gray-600 text-white rounded text-sm">{viewJersey === j.id ? t("closeView") : t("viewDetail")}</button>
                 <button onClick={() => downloadReport(`/api/reports?type=jersey&id=${j.id}`)}
                   className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition">📥</button>
                 <button onClick={() => toggleStatus(j)}
@@ -617,115 +617,115 @@ export default function JerseysPage() {
                   <p className="text-gray-500 text-sm">{t("noRegistrantsYet")}</p>
                 ) : (
                   <div className="overflow-x-auto -mx-6 px-6">
-                  <table className="w-full text-sm min-w-[800px]">
-                    <thead><tr className="text-gray-400 text-left">
-                      <th className="py-1">#</th><th>{t("registrantCol")}</th><th>{t("jerseyName2")}</th><th>{t("phoneCol")}</th><th>{t("numberCol")}</th><th>{t("sizeCol")}</th><th>{t("shirtSizeCol")}</th><th>{t("typeCol")}</th><th>{t("itemCol")}</th><th>{t("priceCol")}</th><th>{t("statusCol")}</th><th>{t("actions")}</th>
-                    </tr></thead>
-                    <tbody>
-                      {viewRegistrations[j.id].map((r, i) => (
-                        <tr key={r.id} className="text-gray-300 border-t border-gray-700">
-                          <td className="py-1">{i + 1}</td>
-                          {editingReg === r.id ? (
-                            <>
-                              <td><input value={editRegForm.registrantName ?? ""} onChange={(e) => setEditRegForm((f) => ({ ...f, registrantName: e.target.value }))} className="w-full px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm" /></td>
-                              <td><input value={editRegForm.name ?? ""} onChange={(e) => setEditRegForm((f) => ({ ...f, name: e.target.value }))} className="w-full px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm" /></td>
-                              <td><input value={editRegForm.phone ?? ""} onChange={(e) => setEditRegForm((f) => ({ ...f, phone: e.target.value }))} className="w-full px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm" /></td>
-                              <td><input type="number" min={1} max={99} value={editRegForm.number ?? ""} onChange={(e) => setEditRegForm((f) => ({ ...f, number: Number(e.target.value) }))} className="w-16 px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm" /></td>
-                              <td>
-                                <select value={editRegForm.size ?? "L"} onChange={(e) => {
-                                  const newSize = e.target.value;
-                                  setEditRegForm((f) => {
-                                    const newSizeIdx = SIZES.indexOf(newSize);
-                                    const shirtIdx = SIZES.indexOf(f.shirtSize || "");
-                                    const shirtStillValid = f.shirtSize && shirtIdx > newSizeIdx;
-                                    const updatedShirt = shirtStillValid ? f.shirtSize : "";
-                                    const updated = { ...f, size: newSize, shirtSize: updatedShirt };
-                                    updated.totalPrice = calcEditPrice(j, updated);
-                                    return updated;
-                                  });
-                                }} className="px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm">
-                                  {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
-                                </select>
-                              </td>
-                              <td>
-                                {(() => {
-                                  const validShirtSizes = getValidShirtSizes(j, editRegForm.size || "L");
-                                  return validShirtSizes.length > 0 ? (
-                                    <select value={editRegForm.shirtSize ?? ""} onChange={(e) => {
-                                      setEditRegForm((f) => {
-                                        const updated = { ...f, shirtSize: e.target.value };
-                                        updated.totalPrice = calcEditPrice(j, updated);
-                                        return updated;
-                                      });
-                                    }} className="px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm">
-                                      <option value="">-</option>
-                                      {validShirtSizes.map((s) => <option key={s} value={s}>{s}</option>)}
-                                    </select>
-                                  ) : <span className="text-gray-500 text-xs">-</span>;
-                                })()}
-                              </td>
-                              <td>
-                                <select value={editRegForm.jerseyType ?? "player"} onChange={(e) => setEditRegForm((f) => ({ ...f, jerseyType: e.target.value }))}
-                                  className="px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-xs">
-                                  <option value="player">⚽ {t("player")}</option>
-                                  <option value="goalkeeper">🧤 {t("goalkeeper")}</option>
-                                </select>
-                              </td>
-                              <td>
-                                <span className="text-xs text-gray-400">
-                                  {(editRegForm.itemType || r.itemType) === "shirt" ? `👕 ${t("itemTypeShirt")}` : (editRegForm.itemType || r.itemType) === "shorts" ? `👟 ${t("itemTypeShorts")}` : `👕👟 ${t("setLabel")}`}
-                                </span>
-                              </td>
-                              <td>
-                                {(editRegForm.totalPrice ?? 0) > 0 ? <span className="text-green-400 font-medium">{formatRupiah(editRegForm.totalPrice ?? 0)}</span> : <span className="text-gray-500">-</span>}
-                              </td>
-                              <td>
-                                <select value={editRegForm.paymentStatus ?? "registered"} onChange={(e) => setEditRegForm((f) => ({ ...f, paymentStatus: e.target.value }))} className={`px-1 py-0.5 rounded text-xs ${getStatusColor(editRegForm.paymentStatus ?? "registered")}`}>
-                                  {PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{getStatusLabel(s)}</option>)}
-                                </select>
-                              </td>
-                              <td className="whitespace-nowrap">
-                                <button onClick={() => saveRegEdit(r.id, j.id)} className="px-2 py-0.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs mr-1">✓</button>
-                                <button onClick={() => { setEditingReg(null); setEditRegForm({}); }} className="px-2 py-0.5 bg-gray-600 hover:bg-gray-500 text-white rounded text-xs">✕</button>
-                              </td>
-                            </>
-                          ) : (
-                            <>
-                              <td>{r.registrantName || "-"}</td>
-                              <td>{r.name}</td>
-                              <td>{r.phone}</td>
-                              <td><span className="bg-green-800 text-green-300 px-2 py-0.5 rounded font-mono">{r.number}</span></td>
-                              <td>{r.size}</td>
-                              <td>{r.shirtSize || "-"}</td>
-                              <td>
-                                <span className={`px-2 py-0.5 rounded text-xs ${r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"}`}>
-                                  {r.jerseyType === "goalkeeper" ? `🧤 ${t("goalkeeper")}` : `⚽ ${t("player")}`}
-                                </span>
-                              </td>
-                              <td>
-                                <span className="text-xs text-gray-400">
-                                  {r.itemType === "shirt" ? `👕 ${t("itemTypeShirt")}` : r.itemType === "shorts" ? `👟 ${t("itemTypeShorts")}` : `👕👟 ${t("setLabel")}`}
-                                </span>
-                              </td>
-                              <td>
-                                {r.totalPrice > 0 ? <span className="text-green-400 font-medium">{formatRupiah(r.totalPrice)}</span> : <span className="text-gray-500">-</span>}
-                              </td>
-                              <td>
-                                <select value={r.paymentStatus || "registered"} onChange={(e) => updatePaymentStatus(r.id, j.id, e.target.value)}
-                                  className={`px-2 py-0.5 rounded text-xs cursor-pointer ${getStatusColor(r.paymentStatus || "registered")}`}>
-                                  {PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{getStatusLabel(s)}</option>)}
-                                </select>
-                              </td>
-                              <td>
-                                <button onClick={() => { setEditingReg(r.id); setEditRegForm({ registrantName: r.registrantName, name: r.name, phone: r.phone, number: r.number, size: r.size, shirtSize: r.shirtSize, jerseyType: r.jerseyType, itemType: r.itemType, totalPrice: r.totalPrice, paymentStatus: r.paymentStatus || "registered" }); }}
-                                  className="px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs">✏️</button>
-                              </td>
-                            </>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    <table className="w-full text-sm min-w-[800px]">
+                      <thead><tr className="text-gray-400 text-left">
+                        <th className="py-1">#</th><th>{t("registrantCol")}</th><th>{t("jerseyName2")}</th><th>{t("phoneCol")}</th><th>{t("numberCol")}</th><th>{t("sizeCol")}</th><th>{t("shirtSizeCol")}</th><th>{t("typeCol")}</th><th>{t("itemCol")}</th><th>{t("priceCol")}</th><th>{t("statusCol")}</th><th>{t("actions")}</th>
+                      </tr></thead>
+                      <tbody>
+                        {viewRegistrations[j.id].map((r, i) => (
+                          <tr key={r.id} className="text-gray-300 border-t border-gray-700">
+                            <td className="py-1">{i + 1}</td>
+                            {editingReg === r.id ? (
+                              <>
+                                <td><input value={editRegForm.registrantName ?? ""} onChange={(e) => setEditRegForm((f) => ({ ...f, registrantName: e.target.value }))} className="w-full px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm" /></td>
+                                <td><input value={editRegForm.name ?? ""} onChange={(e) => setEditRegForm((f) => ({ ...f, name: e.target.value }))} className="w-full px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm" /></td>
+                                <td><input value={editRegForm.phone ?? ""} onChange={(e) => setEditRegForm((f) => ({ ...f, phone: e.target.value }))} className="w-full px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm" /></td>
+                                <td><input type="number" min={0} max={99} value={editRegForm.number ?? ""} onChange={(e) => setEditRegForm((f) => ({ ...f, number: Number(e.target.value) }))} className="w-16 px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm" /></td>
+                                <td>
+                                  <select value={editRegForm.size ?? "L"} onChange={(e) => {
+                                    const newSize = e.target.value;
+                                    setEditRegForm((f) => {
+                                      const newSizeIdx = SIZES.indexOf(newSize);
+                                      const shirtIdx = SIZES.indexOf(f.shirtSize || "");
+                                      const shirtStillValid = f.shirtSize && shirtIdx > newSizeIdx;
+                                      const updatedShirt = shirtStillValid ? f.shirtSize : "";
+                                      const updated = { ...f, size: newSize, shirtSize: updatedShirt };
+                                      updated.totalPrice = calcEditPrice(j, updated);
+                                      return updated;
+                                    });
+                                  }} className="px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm">
+                                    {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
+                                  </select>
+                                </td>
+                                <td>
+                                  {(() => {
+                                    const validShirtSizes = getValidShirtSizes(j, editRegForm.size || "L");
+                                    return validShirtSizes.length > 0 ? (
+                                      <select value={editRegForm.shirtSize ?? ""} onChange={(e) => {
+                                        setEditRegForm((f) => {
+                                          const updated = { ...f, shirtSize: e.target.value };
+                                          updated.totalPrice = calcEditPrice(j, updated);
+                                          return updated;
+                                        });
+                                      }} className="px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-sm">
+                                        <option value="">-</option>
+                                        {validShirtSizes.map((s) => <option key={s} value={s}>{s}</option>)}
+                                      </select>
+                                    ) : <span className="text-gray-500 text-xs">-</span>;
+                                  })()}
+                                </td>
+                                <td>
+                                  <select value={editRegForm.jerseyType ?? "player"} onChange={(e) => setEditRegForm((f) => ({ ...f, jerseyType: e.target.value }))}
+                                    className="px-1 py-0.5 bg-gray-700 text-white rounded border border-gray-600 text-xs">
+                                    <option value="player">⚽ {t("player")}</option>
+                                    <option value="goalkeeper">🧤 {t("goalkeeper")}</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <span className="text-xs text-gray-400">
+                                    {(editRegForm.itemType || r.itemType) === "shirt" ? `👕 ${t("itemTypeShirt")}` : (editRegForm.itemType || r.itemType) === "shorts" ? `👟 ${t("itemTypeShorts")}` : `👕👟 ${t("setLabel")}`}
+                                  </span>
+                                </td>
+                                <td>
+                                  {(editRegForm.totalPrice ?? 0) > 0 ? <span className="text-green-400 font-medium">{formatRupiah(editRegForm.totalPrice ?? 0)}</span> : <span className="text-gray-500">-</span>}
+                                </td>
+                                <td>
+                                  <select value={editRegForm.paymentStatus ?? "registered"} onChange={(e) => setEditRegForm((f) => ({ ...f, paymentStatus: e.target.value }))} className={`px-1 py-0.5 rounded text-xs ${getStatusColor(editRegForm.paymentStatus ?? "registered")}`}>
+                                    {PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{getStatusLabel(s)}</option>)}
+                                  </select>
+                                </td>
+                                <td className="whitespace-nowrap">
+                                  <button onClick={() => saveRegEdit(r.id, j.id)} className="px-2 py-0.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs mr-1">✓</button>
+                                  <button onClick={() => { setEditingReg(null); setEditRegForm({}); }} className="px-2 py-0.5 bg-gray-600 hover:bg-gray-500 text-white rounded text-xs">✕</button>
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td>{r.registrantName || "-"}</td>
+                                <td>{r.name}</td>
+                                <td>{r.phone}</td>
+                                <td><span className="bg-green-800 text-green-300 px-2 py-0.5 rounded font-mono">{r.number}</span></td>
+                                <td>{r.size}</td>
+                                <td>{r.shirtSize || "-"}</td>
+                                <td>
+                                  <span className={`px-2 py-0.5 rounded text-xs ${r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"}`}>
+                                    {r.jerseyType === "goalkeeper" ? `🧤 ${t("goalkeeper")}` : `⚽ ${t("player")}`}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className="text-xs text-gray-400">
+                                    {r.itemType === "shirt" ? `👕 ${t("itemTypeShirt")}` : r.itemType === "shorts" ? `👟 ${t("itemTypeShorts")}` : `👕👟 ${t("setLabel")}`}
+                                  </span>
+                                </td>
+                                <td>
+                                  {r.totalPrice > 0 ? <span className="text-green-400 font-medium">{formatRupiah(r.totalPrice)}</span> : <span className="text-gray-500">-</span>}
+                                </td>
+                                <td>
+                                  <select value={r.paymentStatus || "registered"} onChange={(e) => updatePaymentStatus(r.id, j.id, e.target.value)}
+                                    className={`px-2 py-0.5 rounded text-xs cursor-pointer ${getStatusColor(r.paymentStatus || "registered")}`}>
+                                    {PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{getStatusLabel(s)}</option>)}
+                                  </select>
+                                </td>
+                                <td>
+                                  <button onClick={() => { setEditingReg(r.id); setEditRegForm({ registrantName: r.registrantName, name: r.name, phone: r.phone, number: r.number, size: r.size, shirtSize: r.shirtSize, jerseyType: r.jerseyType, itemType: r.itemType, totalPrice: r.totalPrice, paymentStatus: r.paymentStatus || "registered" }); }}
+                                    className="px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs">✏️</button>
+                                </td>
+                              </>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>

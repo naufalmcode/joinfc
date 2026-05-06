@@ -42,7 +42,7 @@ Klik tombol bahasa di pojok kanan atas (dengan ikon bendera SVG):
 
 ### Pesan Jersey
 1. Di halaman utama, klik **"Pesan Jersey"** pada jersey yang diinginkan
-2. Pilih nomor jersey (1-99) dari grid angka
+2. Pilih nomor jersey (0-99) dari grid angka
    - Hijau = Tersedia
    - Merah = Sudah diambil (hover/tap untuk lihat nama pemilik)
 3. Pilih tipe jersey: **Pemain** atau **Kiper**

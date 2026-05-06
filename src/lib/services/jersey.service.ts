@@ -12,7 +12,7 @@ export class JerseyService implements IJerseyService {
   constructor(
     private readonly launchRepo: IJerseyLaunchRepository,
     private readonly registrationRepo: IJerseyRegistrationRepository
-  ) {}
+  ) { }
 
   async getAll(): Promise<JerseyLaunchWithRegistrations[]> {
     return this.launchRepo.findAll();
@@ -62,7 +62,7 @@ export class JerseyService implements IJerseyService {
     data: { registrantName?: string; name: string; phone: string; number: number; size: string; jerseyType: string; itemType?: string; shirtSize?: string }
   ): Promise<JerseyRegistration> {
     if (data.number < 1 || data.number > 99) {
-      throw new Error("Number must be between 1 and 99");
+      throw new Error("Number must be between 0 and 99");
     }
 
     const launch = await this.launchRepo.findById(launchId);

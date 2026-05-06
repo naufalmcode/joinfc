@@ -400,22 +400,20 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   <button
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, jerseyType: "player" }))}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 font-semibold transition ${
-                      form.jerseyType === "player"
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 font-semibold transition ${form.jerseyType === "player"
                         ? "bg-green-600/20 border-green-500 text-green-400"
                         : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
-                    }`}
+                      }`}
                   >
                     ⚽ {t("jerseyPlayer")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, jerseyType: "goalkeeper" }))}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 font-semibold transition ${
-                      form.jerseyType === "goalkeeper"
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 font-semibold transition ${form.jerseyType === "goalkeeper"
                         ? "bg-blue-600/20 border-blue-500 text-blue-400"
                         : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
-                    }`}
+                      }`}
                   >
                     🧤 {t("jerseyGoalkeeper")}
                   </button>
@@ -430,11 +428,10 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                       <button
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, itemType: "set" }))}
-                        className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${
-                          form.itemType === "set"
+                        className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${form.itemType === "set"
                             ? "bg-green-600/20 border-green-500 text-green-400"
                             : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
-                        }`}
+                          }`}
                       >
                         👕👟 {t("itemTypeSet")}
                       </button>
@@ -443,11 +440,10 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                       <button
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, itemType: "shirt", shirtSize: "" }))}
-                        className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${
-                          form.itemType === "shirt"
+                        className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${form.itemType === "shirt"
                             ? "bg-green-600/20 border-green-500 text-green-400"
                             : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
-                        }`}
+                          }`}
                       >
                         👕 {t("itemTypeShirt")}
                       </button>
@@ -456,11 +452,10 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                       <button
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, itemType: "shorts", shirtSize: "" }))}
-                        className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${
-                          form.itemType === "shorts"
+                        className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${form.itemType === "shorts"
                             ? "bg-green-600/20 border-green-500 text-green-400"
                             : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
-                        }`}
+                          }`}
                       >
                         👟 {t("itemTypeShorts")}
                       </button>
@@ -473,7 +468,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                   <label className="block text-gray-300 text-sm mb-1">{t("jerseyNumber")}</label>
                   <input
                     type="number"
-                    min={1}
+                    min={0}
                     max={99}
                     value={form.number || ""}
                     onChange={(e) => setForm((f) => ({ ...f, number: Number(e.target.value) }))}
@@ -516,7 +511,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                       .filter((size) => SIZES.indexOf(size) > SIZES.indexOf(form.size))
                       .map((size) => (
                         <option key={size} value={size}>{size}</option>
-                    ))}
+                      ))}
                   </select>
                   <p className="text-gray-500 text-xs mt-1">{t("customShirtSizeHint")}</p>
                 </div>
@@ -577,9 +572,8 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${getPublicStatusColor(r.paymentStatus)}`}>
                       {r.paymentStatus === "paid" ? "Lunas" : r.paymentStatus === "dp" ? "DP" : r.paymentStatus === "production" ? "Produksi" : r.paymentStatus === "done" ? "Selesai" : "Terdaftar"}
                     </span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${r.jerseyType === "goalkeeper" ? "bg-blue-800 text-blue-300" : "bg-gray-600 text-gray-300"
+                      }`}>
                       {r.jerseyType === "goalkeeper" ? "🧤 " + t("jerseyGoalkeeper") : "⚽ " + t("jerseyPlayer")}
                     </span>
                   </div>

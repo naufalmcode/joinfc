@@ -231,7 +231,7 @@ npx next start
 **JerseyRegistration:**
 - `registrantName` - Nama lengkap pemesan
 - `name` - Nama yang dicetak di jersey
-- `number` - Nomor jersey (1-99, unique per launch)
+- `number` - Nomor jersey (0-99, unique per launch)
 - `size` - Ukuran utama (S/M/L/XL/XXL/3XL/4XL/5XL/6XL)
 - `shirtSize` - Ukuran baju khusus (opsional, default: "")
 - `jerseyType` - Tipe jersey ("player" | "goalkeeper", default: "player")
@@ -339,7 +339,7 @@ const events = await eventService.findAll();
 - `countByEventIdAndPosition()` menghitung registrasi dengan status `IN ["registered", "confirmed"]` (waiting tidak dihitung)
 
 ### 5. Jersey Launch
-- Grid nomor 1-99 dengan tooltip nama pemilik
+- Grid nomor 0-99 dengan tooltip nama pemilik
 - Field "Nama Pendaftar" terpisah dari "Nama Jersey" (tercetak)
 - **Nama jersey otomatis uppercase** saat diketik di halaman publik
 - Ukuran: S/M/L/XL/XXL/3XL/4XL/5XL/6XL

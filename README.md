@@ -14,7 +14,7 @@ Aplikasi web komunitas sepak bola untuk mengelola event, jersey, galeri, berita,
 ## Fitur Utama
 
 - Event management dengan registrasi (pemain + kiper, auto waiting list berdasarkan kuota)
-- Jersey launch dengan grid nomor 1-99, multi-image desain, dan harga per ukuran/tipe (basePrice + surcharge)
+- Jersey launch dengan grid nomor 0-99, multi-image desain, dan harga per ukuran/tipe (basePrice + surcharge)
 - Galeri aktivitas dengan rich text dan carousel (terbaru dulu)
 - Berita multi-foto
 - Voting/polling dengan gambar opsi
