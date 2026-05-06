@@ -320,7 +320,7 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
         <div className="bg-gray-800 rounded-xl p-6 md:p-8 mt-6">
           <h2 className="text-xl font-bold mb-4">{t("chooseNumber")}</h2>
           <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-1.5 md:gap-2">
-            {Array.from({ length: 99 }, (_, i) => i + 1).map((num) => {
+            {Array.from({ length: 100 }, (_, i) => i).map((num) => {
               const taken = takenNumbers.includes(num);
               const selected = form.number === num;
               const owner = takenMap[num];
@@ -401,8 +401,8 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, jerseyType: "player" }))}
                     className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 font-semibold transition ${form.jerseyType === "player"
-                        ? "bg-green-600/20 border-green-500 text-green-400"
-                        : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                      ? "bg-green-600/20 border-green-500 text-green-400"
+                      : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
                       }`}
                   >
                     ⚽ {t("jerseyPlayer")}
@@ -411,8 +411,8 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, jerseyType: "goalkeeper" }))}
                     className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 font-semibold transition ${form.jerseyType === "goalkeeper"
-                        ? "bg-blue-600/20 border-blue-500 text-blue-400"
-                        : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                      ? "bg-blue-600/20 border-blue-500 text-blue-400"
+                      : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
                       }`}
                   >
                     🧤 {t("jerseyGoalkeeper")}
@@ -429,8 +429,8 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, itemType: "set" }))}
                         className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${form.itemType === "set"
-                            ? "bg-green-600/20 border-green-500 text-green-400"
-                            : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                          ? "bg-green-600/20 border-green-500 text-green-400"
+                          : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
                           }`}
                       >
                         👕👟 {t("itemTypeSet")}
@@ -441,8 +441,8 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, itemType: "shirt", shirtSize: "" }))}
                         className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${form.itemType === "shirt"
-                            ? "bg-green-600/20 border-green-500 text-green-400"
-                            : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                          ? "bg-green-600/20 border-green-500 text-green-400"
+                          : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
                           }`}
                       >
                         👕 {t("itemTypeShirt")}
@@ -453,8 +453,8 @@ export default function JerseyPage({ params }: { params: Promise<{ slug: string 
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, itemType: "shorts", shirtSize: "" }))}
                         className={`px-4 py-3 rounded-lg border-2 font-semibold transition text-sm ${form.itemType === "shorts"
-                            ? "bg-green-600/20 border-green-500 text-green-400"
-                            : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
+                          ? "bg-green-600/20 border-green-500 text-green-400"
+                          : "bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500"
                           }`}
                       >
                         👟 {t("itemTypeShorts")}
