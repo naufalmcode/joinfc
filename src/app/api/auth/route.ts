@@ -1,6 +1,13 @@
 import { NextRequest } from "next/server";
-import { verifyAdminPassword, createAdminSession, destroyAdminSession } from "@/lib/auth";
+import { verifyAdminPassword, createAdminSession, destroyAdminSession, validateAdminSession } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/api-utils";
+
+// Session status check used by the admin dashboard
+export async function GET() {
+  const valid = await validateAdminSession();
+  if (!valid) return errorResponse("Unauthorized", 401);
+  return successResponse({ authenticated: true });
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
